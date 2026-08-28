@@ -698,7 +698,7 @@ const DICT={
   cta_coverage:"See coverage & markets →", cta_pilot:"Request a pilot →",
   banner_indb_h:"Already in our data.", banner_pilot_h:"Read in Soho — preview only.", banner_road_h:"In the roadmap.",
   banner_indb_s:"This market can be switched on for CCEP in weeks — the data already exists.", banner_pilot_s:"One zone scanned for the case study. Full coverage opens on activation.", banner_road_s:"Not read yet. First full picture in about 8 weeks from go.",
-  menu_lead:"Every brand on the drinks menu. Coca-Cola-owned brands in red — everything else is the field to win.", som_title:"Share of the drinks menu", owned_lbl:"CCEP-owned",
+  menu_lead:"Every brand on the drinks menu. Coca-Cola-owned brands in red — everything else is the field to win.", som_title:"Share of the drinks menu", owned_lbl:"CCEP-owned", rank_title:"Top brands",
   bt_brand:"Brand", bt_onmenu:"On menus", bt_qoq:"QoQ",
   adj_lead:"What kind of venue Coca-Cola shows up in, and which rival drinks share the same menu.", adj_cui_title:"Over- and under-indexed venues", adj_riv_title:"Rivals on the same menu", adj_idxnote:"100 = the market average. Above = over-represented.",
   exec_lead:"Menu presence is one thing. The fridge, the glass and the storefront are another — and they are usually behind.", exec_place_title:"Where the brands show up", exec_gap_title:"On the menu vs in the room", leg_leader:"Coca-Cola", leg_chal:"Top challenger", eg_menu:"On the menu",
@@ -738,7 +738,7 @@ const DICT={
   cta_coverage:"Ver cobertura & mercados →", cta_pilot:"Pedir um piloto →",
   banner_indb_h:"Já nos nossos dados.", banner_pilot_h:"Lido no Soho — só amostra.", banner_road_h:"No roadmap.",
   banner_indb_s:"Este mercado pode ser ligado para a CCEP em semanas — os dados já existem.", banner_pilot_s:"Uma zona lida para o caso de estudo. A cobertura total abre na ativação.", banner_road_s:"Ainda não lido. Primeira leitura completa em cerca de 8 semanas.",
-  menu_lead:"Todas as marcas na carta de bebidas. Marcas do portefólio CCEP a vermelho — o resto é o campo a ganhar.", som_title:"Presença na carta de bebidas", owned_lbl:"Portefólio CCEP",
+  menu_lead:"Todas as marcas na carta de bebidas. Marcas do portefólio CCEP a vermelho — o resto é o campo a ganhar.", som_title:"Presença na carta de bebidas", owned_lbl:"Portefólio CCEP", rank_title:"Marcas em destaque",
   bt_brand:"Marca", bt_onmenu:"Nas cartas", bt_qoq:"Trim.",
   adj_lead:"Em que tipo de espaço a Coca-Cola aparece, e que bebidas rivais partilham a mesma carta.", adj_cui_title:"Espaços sobre e sub-indexados", adj_riv_title:"Rivais na mesma carta", adj_idxnote:"100 = média do mercado. Acima = sobre-representado.",
   exec_lead:"A carta é uma coisa. O frigorífico, o copo e a fachada são outra — e costumam estar atrás.", exec_place_title:"Onde as marcas aparecem", exec_gap_title:"Na carta vs no espaço", leg_leader:"Coca-Cola", leg_chal:"Maior desafiante", eg_menu:"Na carta",
@@ -901,7 +901,7 @@ function renderMenu(m){
   h+=`<div class="blockhead"><span class="num">01</span><h3>${T.som_title} · ${CAT}</h3></div>`;
   h+=`<div class="somrow"><div class="somtop"><span>${CAT}</span><span><b>${owned}%</b> ${T.owned_lbl}</span></div><div class="somstack">${som.map(([n,v],i)=>`<div class="somseg ${isCCEP(n,m)?"ccep":""}" data-w="${v}%" style="background:${cols[i]}">${v>=7?v:""}</div>`).join("")}</div><div class="somleg">${som.map(([n,v],i)=>`<span><span class="sw" style="background:${cols[i]}"></span>${n} ${v}%</span>`).join("")}</div></div>`;
   const top=m.top[CAT], mx=Math.max(...top.map(t=>t[1]));
-  h+=`<div class="blockhead"><span class="num">02</span><h3>${T.bt_onmenu} · ${CAT}</h3></div>`;
+  h+=`<div class="blockhead"><span class="num">02</span><h3>${T.rank_title} · ${CAT}</h3></div>`;
   h+=`<table class="btable"><thead><tr><th>#</th><th>${T.bt_brand}</th><th>${T.bt_onmenu}</th><th class="num">${T.bt_qoq}</th></tr></thead><tbody>${top.map((t,i)=>{
     const [n,v,d]=t, own=isCCEP(n,m), col=own?"var(--coke)":"#586470", dc=d>0?"up":d<0?"dn":"flat", ds=(d>0?"+":"")+d;
     return `<tr><td class="rank">${i+1}</td><td><span class="bname">${n}</span>${own?`<span class="owntag">CCEP</span>`:""}</td><td><span class="pbar-track"><span class="pbar-fill" data-w="${Math.round(v/mx*100)}%" style="background:${col}"></span></span><span class="cc">${v}%</span></td><td class="num"><span class="delta ${dc}">${ds}</span></td></tr>`;
