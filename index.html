@@ -1000,21 +1000,37 @@ function wizIsReal(){ return REAL_DATA_COUNTRIES.has(wizCountry); }
 function wizVenuesEstimate(){ return Math.round(density(MARKETS[wizCountry])*0.16); }
 function wizCanvas(){
   const badge = wizIsReal()
-    ? `<span class="databadge real">${LANG==="en"?"Real data · Restaurant Discovery DB":"Dados reais · BD Restaurant Discovery"}</span>`
-    : `<span class="databadge est">${LANG==="en"?"Estimate · no DB coverage yet":"Estimativa · sem cobertura na BD"}</span>`;
+    ? `<span class="databadge real">Restaurant Discovery DB</span>`
+    : `<span class="databadge est">${LANG==="en"?"Model estimate":"Estimativa do modelo"}</span>`;
   return `<div class="wizcanvas">${badge}<div class="canvhint">${T.canv_hint}</div><div id="wizLeafletMap"></div></div>`;
 }
+let wizPointLayers=[];
 function wizInitMap(){
   const el=document.getElementById("wizLeafletMap");
   if(!el || typeof L==="undefined") return;
   if(wizMap){ wizMap.remove(); wizMap=null; wizMarker=null; wizCircle=null; }
+  wizPointLayers=[];
   const center = CITY_COORDS[wizCity] || CITY_COORDS[MARKETS[wizCountry].cities[0]] || [45,10];
-  wizMap=L.map(el,{zoomControl:true,attributionControl:true}).setView(center, 14);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{
-    maxZoom:19, attribution:'&copy; OpenStreetMap &copy; CARTO'
+  wizMap=L.map(el,{zoomControl:true,attributionControl:true}).setView(center, 15);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+    maxZoom:19, attribution:'&copy; OpenStreetMap contributors'
   }).addTo(wizMap);
+  el.style.background="#14171a";
+  const tilePane=el.querySelector(".leaflet-tile-pane");
+  if(tilePane) tilePane.style.filter="invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9)";
   if(wizPin && wizPin.country===wizCountry && wizPin.city===wizCity){ dropAt(wizPin.lat,wizPin.lng,false); }
   wizMap.on("click", e=>dropAt(e.latlng.lat, e.latlng.lng, true));
+}
+function clearPointLayers(){ wizPointLayers.forEach(l=>wizMap.removeLayer(l)); wizPointLayers=[]; }
+function plotPoints(points){
+  clearPointLayers();
+  (points||[]).forEach(p=>{
+    if(p.lat==null||p.lng==null) return;
+    const dot=L.circleMarker([p.lat,p.lng],{radius:4,color:"#4fd6ff",weight:1,fillColor:"#4fd6ff",fillOpacity:.85})
+      .bindTooltip(p.name||"", {direction:"top", offset:[0,-4]});
+    dot.addTo(wizMap);
+    wizPointLayers.push(dot);
+  });
 }
 function dropAt(lat,lng,fetchNew){
   wizPin={lat,lng,country:wizCountry,city:wizCity};
@@ -1027,14 +1043,14 @@ function dropAt(lat,lng,fetchNew){
 }
 async function fetchVenueCount(lat,lng){
   wizCountLoading=true; wizCount=null; updateCountUI();
-  if(!wizIsReal()){ wizCount=wizVenuesEstimate(); wizCountReal=false; wizCountLoading=false; updateCountUI(); return; }
+  if(!wizIsReal()){ wizCount=wizVenuesEstimate(); wizCountReal=false; wizCountLoading=false; updateCountUI(); if(wizMap)clearPointLayers(); return; }
   try{
     const cc=wizCountry.toLowerCase();
     const res=await fetch(`/api/venues?country=${cc}&lat=${lat}&lng=${lng}&radius=250`);
     const data=await res.json();
-    if(data && data.ok){ wizCount=data.venues; wizCountReal=true; }
-    else { wizCount=wizVenuesEstimate(); wizCountReal=false; }
-  }catch(e){ wizCount=wizVenuesEstimate(); wizCountReal=false; }
+    if(data && data.ok){ wizCount=data.venues; wizCountReal=true; plotPoints(data.points); }
+    else { wizCount=wizVenuesEstimate(); wizCountReal=false; if(wizMap)clearPointLayers(); }
+  }catch(e){ wizCount=wizVenuesEstimate(); wizCountReal=false; if(wizMap)clearPointLayers(); }
   wizCountLoading=false; updateCountUI();
 }
 function updateCountUI(){
@@ -1042,9 +1058,7 @@ function updateCountUI(){
   if(!v) return;
   if(wizCountLoading){ v.innerHTML=`<span class="rdv loading">${LANG==="en"?"Counting…":"A contar…"}</span>`; return; }
   if(wizCount==null){ v.innerHTML=`<span class="rdv">—</span>`; return; }
-  const tagTxt = wizCountReal ? (LANG==="en"?"real":"real") : (LANG==="en"?"est.":"est.");
-  const tagCol = wizCountReal ? "var(--live)" : "var(--ink-faint)";
-  v.innerHTML=`<span class="rdv coke">~${fmt(wizCount)} <small style="color:${tagCol}">${tagTxt}</small></span>`;
+  v.innerHTML=`<span class="rdv coke">~${fmt(wizCount)}</span>`;
 }
 function renderPilot(){
   const wrap=$("pilotWrap");
@@ -1073,8 +1087,7 @@ function renderPilot(){
     let total=0,cats=0; wizSel.forEach(i=>{total+=DATAPOINTS.cats[i].n;cats++;});
     const m=MARKETS[wizCountry];
     const cVal = wizCount!=null ? wizCount : wizVenuesEstimate();
-    const cTag = wizCountReal ? (LANG==="en"?"real count":"contagem real") : (LANG==="en"?"estimate":"estimativa");
-    h+=`<div class="sumcard"><div class="sumrow"><span class="sk">${T.sum_country}</span><span class="sv">${m.flag} ${m.name}</span></div><div class="sumrow"><span class="sk">${T.lbl_city}</span><span class="sv">${wizCity}</span></div><div class="sumrow"><span class="sk">${T.sum_area}</span><span class="sv">250 m · <b>~${fmt(cVal)}</b> ${T.venues_word} <span style="color:var(--ink-faint);font-size:11px">(${cTag})</span></span></div><div class="sumrow"><span class="sk">${T.sum_cats}</span><span class="sv">${cats} / 21</span></div><div class="sumrow"><span class="sk">${T.sum_points}</span><span class="sv"><b>${total}</b></span></div></div>`;
+    h+=`<div class="sumcard"><div class="sumrow"><span class="sk">${T.sum_country}</span><span class="sv">${m.flag} ${m.name}</span></div><div class="sumrow"><span class="sk">${T.lbl_city}</span><span class="sv">${wizCity}</span></div><div class="sumrow"><span class="sk">${T.sum_area}</span><span class="sv">250 m · <b>~${fmt(cVal)}</b> ${T.venues_word}</span></div><div class="sumrow"><span class="sk">${T.sum_cats}</span><span class="sv">${cats} / 21</span></div><div class="sumrow"><span class="sk">${T.sum_points}</span><span class="sv"><b>${total}</b></span></div></div>`;
     h+=`<div class="btnrow"><button class="btn ghost" onclick="wizGo(2)">${T.wiz_back}</button><button class="btn primary" onclick="wizSubmit()">${T.wiz_submit}</button></div>`;
   }
   h+=`</div>`;

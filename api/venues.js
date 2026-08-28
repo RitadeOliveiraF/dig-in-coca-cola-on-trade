@@ -34,18 +34,19 @@ module.exports = async (req, res) => {
     }
 
     const table = `discovered_businesses_${cc}`;
-    // Haversine distance in metres, filtered to horeca-relevant venues with valid coordinates.
     const sql = `
-      SELECT
-        count(*) FILTER (WHERE is_fnb) AS venues,
-        count(*) FILTER (WHERE is_fnb AND category ILIKE '%restaurant%') AS restaurants,
-        count(*) FILTER (WHERE is_fnb AND (category ILIKE '%bar%' OR category ILIKE '%pub%')) AS bars
-      FROM ${table}
-      WHERE latitude IS NOT NULL AND longitude IS NOT NULL
-        AND (6371000 * acos(
-              LEAST(1, cos(radians(${latN})) * cos(radians(latitude)) * cos(radians(longitude) - radians(${lngN}))
-              + sin(radians(${latN})) * sin(radians(latitude)))
-            )) <= ${radiusN};
+      SELECT * FROM (
+        SELECT name, category, latitude, longitude,
+          (6371000 * acos(
+            LEAST(1, cos(radians(${latN})) * cos(radians(latitude)) * cos(radians(longitude) - radians(${lngN}))
+            + sin(radians(${latN})) * sin(radians(latitude)))
+          )) AS dist_m
+        FROM ${table}
+        WHERE is_fnb = true AND latitude IS NOT NULL AND longitude IS NOT NULL
+      ) sub
+      WHERE dist_m <= ${radiusN}
+      ORDER BY dist_m
+      LIMIT 300;
     `;
 
     const r = await fetch(`https://api.supabase.com/v1/projects/${PROJECT_ID}/database/query`, {
@@ -59,15 +60,18 @@ module.exports = async (req, res) => {
       return;
     }
     const rows = await r.json();
-    const row = Array.isArray(rows) && rows[0] ? rows[0] : { venues: 0, restaurants: 0, bars: 0 };
+    const list = Array.isArray(rows) ? rows : [];
+    const restaurants = list.filter(x => (x.category || "").toLowerCase().includes("restaurant")).length;
+    const bars = list.filter(x => { const c = (x.category || "").toLowerCase(); return c.includes("bar") || c.includes("pub"); }).length;
 
     res.status(200).json({
       ok: true,
       country: cc,
       radius: radiusN,
-      venues: Number(row.venues || 0),
-      restaurants: Number(row.restaurants || 0),
-      bars: Number(row.bars || 0),
+      venues: list.length,
+      restaurants,
+      bars,
+      points: list.map(x => ({ name: x.name, category: x.category, lat: x.latitude, lng: x.longitude })),
     });
   } catch (e) {
     res.status(500).json({ ok: false, reason: "exception", message: String(e && e.message || e) });
