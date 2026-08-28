@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root{
@@ -348,15 +348,7 @@ main{max-width:1300px;margin:0 auto}
 .fsel{width:100%;font-family:'Inter',sans-serif;font-size:13.5px;padding:10px 13px;background:var(--panel-2);color:var(--ink);border:1px solid var(--line-2);border-radius:7px;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' stroke='%239aa3ab' stroke-width='1.4' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 13px center;padding-right:32px}
 .wizcanvas{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative}
 .wizcanvas svg{display:block;width:100%;height:auto;cursor:crosshair}
-.canvhint{position:absolute;top:12px;left:14px;z-index:500;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);background:rgba(12,14,16,.7);padding:5px 10px;border-radius:5px;pointer-events:none}
-#wizLeafletMap{width:100%;height:360px;background:var(--panel)}
-.leaflet-container{background:var(--panel)!important;font-family:'Inter',sans-serif}
-.leaflet-control-attribution{background:rgba(12,14,16,.75)!important;color:var(--ink-faint)!important;font-size:9px!important}
-.leaflet-control-attribution a{color:var(--ink-dim)!important}
-.databadge{position:absolute;top:12px;right:12px;z-index:500;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:5px 10px;border-radius:5px;pointer-events:none}
-.databadge.real{background:rgba(70,224,143,.16);color:var(--live);border:1px solid rgba(70,224,143,.35)}
-.databadge.est{background:rgba(120,132,144,.16);color:var(--ink-dim);border:1px solid var(--line-2)}
-.rdv.loading{color:var(--ink-faint);font-size:13px}
+.canvhint{position:absolute;top:12px;left:14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);background:rgba(12,14,16,.7);padding:5px 10px;border-radius:5px;pointer-events:none}
 .wizside{display:flex;flex-direction:column;gap:16px}
 .wizreadout{background:linear-gradient(135deg,var(--panel-2),var(--panel));border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:20px}
 .rd{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--line)}
@@ -409,6 +401,31 @@ main{max-width:1300px;margin:0 auto}
 .foot .fm{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--ink-faint);text-align:right;line-height:1.6}
 
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== v3: expandable data points + real pilot map ===== */
+.dpcard{cursor:pointer}
+details.dpcard>summary{list-style:none;outline:none}
+details.dpcard>summary::-webkit-details-marker{display:none}
+.dpmore{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);margin-top:12px}
+.dpmore .chev{display:inline-block;transition:transform .18s}
+details[open] .dpmore .chev{transform:rotate(180deg)}
+details[open] .dpmore{color:var(--ink-faint)}
+.dpfull{list-style:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:7px}
+.dpfull li{font-size:12px;color:var(--ink-dim);line-height:1.4;padding-left:14px;position:relative}
+.dpfull li::before{content:"";position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:var(--coke)}
+.wizmapwrap{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+#wizmap{height:400px;width:100%;background:var(--panel-2);z-index:0}
+@media(max-width:640px){#wizmap{height:320px}}
+.wizmapwrap .canvhint{z-index:500}
+.mapfallback{height:400px;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;font-size:13px;color:var(--ink-faint);line-height:1.5}
+.leaflet-container{background:#0c0e10;font-family:'Inter',sans-serif}
+.leaflet-bar a{background:var(--panel)!important;color:var(--ink)!important;border-color:var(--line-2)!important}
+.leaflet-bar a:hover{background:var(--panel-2)!important}
+.databadge{position:absolute;top:12px;right:12px;z-index:500;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:5px 10px;border-radius:5px;pointer-events:none}
+.databadge.real{background:rgba(70,224,143,.16);color:var(--live);border:1px solid rgba(70,224,143,.35)}
+.databadge.est{background:rgba(120,132,144,.16);color:var(--ink-dim);border:1px solid var(--line-2)}
+.rdv.loading{color:var(--ink-faint);font-size:13px}
+
 </style>
 </head>
 <body>
@@ -510,6 +527,9 @@ const DATAPOINTS={ total:253, cats:[
   {n:10, k:"found", name:{en:"One identity per venue",pt:"Identidade única por espaço"}, d:{en:"A single clean record across every source, with no duplicates.",pt:"Um registo único e limpo em todas as fontes, sem duplicados."}},
   {n:5, k:"found", name:{en:"Data quality",pt:"Qualidade dos dados"}, d:{en:"Freshness, number of sources and human validation per venue.",pt:"Atualidade, número de fontes e validação humana por espaço."}}
 ]};
+
+const DP_FULL=[{"en": ["Has wine list (yes/no)", "Wine reference count", "Wine regions represented", "Average wine bottle price", "Has cocktails/mixology (yes/no)", "Beer brands on menu", "Has craft beer (yes/no)", "Soft drink brands on menu", "Water brands on menu", "Coffee brands mentioned", "Spirits/liqueur brands on menu", "Has separate dessert menu", "Has brunch menu (yes/no)", "Has premium non-alcoholic drink options", "Alcoholic beverages identification (bar / wine cellar)"], "pt": ["Tem carta de vinhos (sim/não)", "Nº de referências de vinho", "Regiões vitivinícolas representadas", "Preço médio garrafa de vinho", "Tem cocktails/mixologia (sim/não)", "Marcas de cerveja no menu", "Tem cerveja artesanal (sim/não)", "Marcas de refrigerantes no menu", "Marcas de água no menu", "Marcas de café mencionadas", "Marcas de spirits/licores no menu", "Tem carta de sobremesas separada", "Tem menu de brunch (sim/não)", "Tem opções de bebidas não alcoólicas premium", "Identificação de bebidas alcoólicas (bar / garrafeira)"]}, {"en": ["Total brands identified", "Visible beer brands (list)", "Visible soft drink brands", "Visible water brands", "Visible spirits brands", "Visible coffee brands", "Visible wine brands", "Dominant beer brand", "Dominant soft drink brand", "Number of brands with exterior POSM", "Exterior signage — brands", "Visible snack/food brands", "Visible energy/isotonic brands", "Visible dairy brand products", "Brand share of visibility (% images featuring brand)", "Average brand detection confidence score"], "pt": ["Nº total de marcas identificadas", "Marcas de cerveja visíveis (lista)", "Marcas de refrigerantes visíveis", "Marcas de água visíveis", "Marcas de espirituosas visíveis", "Marcas de café visíveis", "Marcas de vinho visíveis", "Marca de cerveja dominante", "Marca de refrigerante dominante", "Nº de marcas com POSM exterior", "Sinalética exterior (marcas)", "Marcas de snacks/alimentação visíveis", "Marcas de energia/isotónicos visíveis", "Marcas de produtos lácteos visíveis", "Share of visibility por marca (% imagens em que aparece)", "Confiança média da deteção de marcas (score)"]}, {"en": ["Has accessible digital menu (yes/no)", "Total menu item count", "Number of menu categories", "Average price per item", "Minimum menu price", "Maximum menu price", "Estimated average ticket", "Price range (€/€€/€€€/€€€€)", "Estimated cost for 2 people", "Last detected menu update", "Menu update frequency", "Has daily/executive menu (yes/no)", "Daily menu price (if applicable)", "Seasonal variation detected in menu"], "pt": ["Tem menu digital acessível (sim/não)", "Nº total de itens no menu", "Nº de categorias no menu", "Preço médio por item", "Preço mínimo no menu", "Preço máximo no menu", "Ticket médio estimado", "Faixa de preço (€/€€/€€€/€€€€)", "Custo estimado para 2 pessoas", "Última atualização do menu detetada", "Frequência de atualização de menu", "Tem menu do dia / executivo (sim/não)", "Preço do menu do dia (se aplicável)", "Sazonalidade detetada no menu"]}, {"en": ["Beer tap / draught column (yes/no)", "Beer tap (count)", "Coffee machine (brand)", "Has display cabinet (yes/no)", "Visible brands on glasses/crockery", "Visible brands on exterior furniture", "Parasols/awnings — brand", "Drink fridges — brand", "Screens/TVs visible (yes/no)", "POS terminal visible (yes/no)", "Visible coffee extraction type", "Has visible sound system (speakers, DJ booth)", "Reduced mobility accessibility (visible ramp)", "Open / closed kitchen"], "pt": ["Coluna de cerveja (sim/não)", "Coluna de cerveja (nº)", "Máquina de café (marca)", "Tem vitrina de exposição (sim/não)", "Marcas em copos/louça visíveis", "Marcas em mobiliário exterior (cadeiras/mesas)", "Guarda-sóis/toldos (marca)", "Frigoríficos de bebidas (marca)", "Ecrãs/TVs visíveis (sim/não)", "POS terminal visível (sim/não)", "Tipo de extração do café visível", "Tem sistema de som visível (colunas, DJ booth)", "Acessibilidade mobilidade reduzida (rampa visível)", "Cozinha aberta / fechada"]}, {"en": ["Total images analysed", "Average image quality score", "% professional vs UGC images", "Space type detected", "Estimated seating capacity", "Has terrace (yes/no)", "Decorative style detected", "Space lighting type", "Predominant interior material", "Has visible art/murals/themed decor", "Has live music / visible stage (yes/no)", "Inferred dress code", "Has garden / covered outdoor space", "Estimated terrace capacity", "Overall ambiance score (qualitative)", "Seating typology (counter, communal, individual, round tables)", "Staff attire (uniform, shirt, apron, etc.)", "Table linen type", "Photo hot spots (most photographed elements/areas)"], "pt": ["Nº total de imagens analisadas", "Qualidade média das imagens (score)", "% imagens de donos vs UGC", "Tipo de espaço detetado", "Capacidade estimada (nº lugares)", "Tem esplanada (sim/não)", "Estilo decorativo detetado", "Iluminação do espaço (tipo)", "Material predominante do interior", "Tem arte/murais/decoração temática visível", "Tem música ao vivo / palco visível (sim/não)", "Dress code inferido", "Tem jardim / espaço exterior coberto", "Lotação estimada (esplanada)", "Ambiance geral (score qualitativo)", "Tipologia de assentos (balcão, mesas corridas, individuais, redondas)", "Equipamento do staff (farda, camisa, avental, etc.)", "Tipo de toalha de mesa", "Photo hot spots (elementos/áreas mais fotografados)"]}, {"en": ["Establishment name", "Alternative Name / Short name / Also Know As", "Legal Name / Company Name", "Primary category", "Cuisine sub-type", "Identified cuisine type split", "Tax ID (NIF/NIPC)", "Primary economic activity code", "Estimated opening date", "Operational status", "Chain or group", "Number of units (if chain)"], "pt": ["Nome do estabelecimento", "Nome alternativo / alcunhas / Também Conhecido por", "Denominação Social", "Tipologia principal", "Sub-tipologia culinária", "Split de tipologias culinárias identificadas", "NIF / NIPC", "CAE principal", "Data de abertura estimada", "Status operacional", "Cadeia ou grupo", "Número de unidades (se cadeia)"]}, {"en": ["Main proteins list", "Has vegetarian options (yes/no)", "Has vegan options (yes/no)", "Has gluten-free options (yes/no)", "Premium ingredients detected", "Gastronomic heritage dishes", "International cuisines represented", "Gastronomy trends detected", "Number of dishes with origin label", "Artisanal products mentioned", "Has lactose-free / declared allergens", "Has children's dishes / kids' menu", "What to order (recommended dishes)", "Frequent pairing combinations (dishes + drinks)"], "pt": ["Lista de proteínas principais", "Tem opções vegetarianas (sim/não)", "Tem opções vegan (sim/não)", "Tem opções sem glúten (sim/não)", "Ingredientes premium detetados", "Pratos de património gastronómico (cartas gastronómicas portuguesas)", "Cozinhas internacionais representadas", "Tendências gastronómicas detetadas", "Nº de pratos com indicação de origem", "Produtos artesanais mencionados", "Tem opções sem lactose / alergénios declarados", "Tem pratos para crianças / menu infantil", "O que pedir (pratos recomendados)", "Combinações frequentes de pairing (pratos + bebidas)"]}, {"en": ["Present on Uber Eats (yes/no)", "Uber Eats rating", "Uber Eats review count", "Uber Eats menu item count", "Uber Eats average price", "Uber Eats estimated delivery time", "Present on Glovo (yes/no)", "Glovo rating", "Glovo menu item count", "Present on Bolt Food (yes/no)", "Bolt Food rating", "Number of active delivery platforms", "Exclusive to one platform (yes/no)", "Active delivery promotions (yes/no)", "Cross-platform delivery promotion comparison", "Dine-in vs delivery pricing gap (%)"], "pt": ["Presente no Uber Eats (sim/não)", "Rating Uber Eats", "Nº de reviews Uber Eats", "Nº de itens no menu Uber Eats", "Preço médio Uber Eats", "Tempo estimado entrega Uber Eats", "Presente no Glovo (sim/não)", "Rating Glovo", "Nº de itens no menu Glovo", "Presente no Bolt Food (sim/não)", "Rating Bolt Food", "Nº de plataformas de delivery ativas", "Exclusividade numa plataforma (sim/não)", "Promoções ativas em delivery (sim/não)", "Comparação de promoções entre plataformas de entregas", "Gap de pricing entre dine-in e delivery (price gap %)"]}, {"en": ["Total aggregated reviews (all platforms)", "Weighted average rating (all platforms)", "Review volume last 30 days", "Review growth rate (M/M)", "Overall sentiment score (-1 to 1)", "Top 3 positive themes", "Top 3 negative themes", "% positive reviews (4-5★)", "% negative reviews (1-2★)", "Review language distribution", "Most recent review (date)", "TripAdvisor review count", "TripAdvisor rating", "TripAdvisor city ranking", "TheFork review count", "TheFork rating", "Average rating by language (PT/EN/ES/DE)", "Owner response rate (reviews)", "Average review response time (days)"], "pt": ["Total reviews agregado (todas plataformas)", "Rating médio ponderado (todas plataformas)", "Volume reviews últimos 30 dias", "Growth rate reviews (M/M)", "Sentimento geral (score -1 a 1)", "Top 3 temas positivos", "Top 3 temas negativos", "% reviews positivas (4-5)", "% reviews negativas (1-2)", "Idiomas das reviews (distribuição)", "Review mais recente (data)", "Nº reviews TripAdvisor", "Rating TripAdvisor", "Ranking TripAdvisor na cidade", "Nº reviews TheFork", "Rating TheFork", "Rating médio por idioma", "Taxa de resposta do proprietário (reviews)", "Tempo médio de resposta a reviews (dias)"]}, {"en": ["Present on TheFork (yes/no)", "TheFork rating", "TheFork review count", "Offers TheFork discounts (yes/no)", "TheFork — YUMS programme (yes/no)", "Present on OpenTable (yes/no)", "Present on TripAdvisor Reservations (yes/no)", "Number of active reservation platforms", "Has own reservation system (yes/no)"], "pt": ["Presente no TheFork (sim/não)", "Rating TheFork", "Nº de reviews TheFork", "Oferece descontos TheFork (sim/não)", "TheFork — programa YUMS (sim/não)", "Presente no OpenTable (sim/não)", "Presente no TripAdvisor Reservas (sim/não)", "Nº de plataformas de reservas ativas", "Tem sistema de reserva próprio (sim/não)"]}, {"en": ["Estimated average daily footfall", "Average lunchtime footfall", "Average dinnertime footfall", "Weekly traffic peak (day)", "Traffic seasonality", "Visitor origin (% local vs tourist)", "Weekend vs weekday footfall ratio", "Average breakfast footfall (7h-10h)"], "pt": ["Footfall médio diário (estimado)", "Footfall médio hora de almoço", "Footfall médio hora de jantar", "Pico de tráfego semanal (dia)", "Sazonalidade de tráfego", "Origem dos visitantes (% local vs turista)", "Footfall médio fim de semana vs semana (ratio)", "Footfall médio período de pequeno-almoço (7h-10h)"]}, {"en": ["Direct competitors (500m radius, same type)", "Zone average rating", "Relative price position in zone", "DIG-IN local ranking", "Brand overlap with competitors"], "pt": ["Nº de concorrentes diretos (raio 500m, mesma tipologia)", "Rating médio da zona", "Posição relativa de preço na zona", "Ranking DIG-IN local", "Overlap de marcas com concorrentes"]}, {"en": ["Monthly customer volume proxy", "Estimated monthly revenue proxy", "Popularity trend (3 months)", "Detected job postings (vacancies)", "Type of vacancies published", "Detected promotion frequency", "Recent menu changes (flag)", "Expected seasonal variation", "Closure risk score", "Growth potential score", "Renovation/construction signal detected", "Opening hours variation in last 90 days"], "pt": ["Proxy de volume de clientes mensal", "Proxy de faturação mensal estimada", "Tendência de popularidade (3 meses)", "Job postings detetados (vagas)", "Tipo de vagas publicadas (funções)", "Frequência de promoções detetadas", "Alterações recentes no menu (flag)", "Variação sazonal esperada", "Score de risco de encerramento", "Score de potencial de crescimento", "Sinal de remodelação/obra detetado", "Variação de horários nos últimos 90 dias"]}, {"en": ["Has Instagram profile (yes/no)", "Instagram URL", "Instagram followers count", "Instagram posts count", "Instagram engagement rate", "Publishing frequency (posts/week)", "Last Instagram post (date)", "Most used hashtags", "Has link in bio for reservations/menu", "Number of Reels published (last 90d)", "Has active Instagram Stories (last 24h)"], "pt": ["Tem perfil Instagram (sim/não)", "URL Instagram", "Nº de seguidores Instagram", "Nº de posts Instagram", "Engagement rate Instagram", "Frequência de publicação (posts/semana)", "Último post Instagram (data)", "Hashtags mais usados", "Tem link na bio para reservas/menu", "Nº de Reels publicados (últimos 90d)", "Tem Instagram Stories ativas (últimas 24h)"]}, {"en": ["Has Facebook page (yes/no)", "Facebook URL", "Facebook followers/likes count", "Facebook rating", "Facebook check-ins count", "Last Facebook post (date)"], "pt": ["Tem página Facebook (sim/não)", "URL Facebook", "Nº de seguidores/likes Facebook", "Rating Facebook", "Nº de check-ins Facebook", "Último post Facebook (data)"]}, {"en": ["Has TikTok profile (yes/no)", "TikTok followers count", "Has LinkedIn profile (yes/no)", "Has YouTube channel (yes/no)", "Media/blog/influencer mentions", "Mentions in gastronomy guides (Michelin, Zomato, etc.)"], "pt": ["Tem perfil TikTok (sim/não)", "Nº seguidores TikTok", "Tem perfil LinkedIn (sim/não)", "Tem canal YouTube (sim/não)", "Menções em media/blogs/influencers", "Menções em guias gastronómicos (Michelin, Boa Cama Boa Mesa, etc.)"]}, {"en": ["Full address", "Postal code", "Parish (Freguesia)", "Municipality", "District / Region", "Country", "Latitude", "Longitude", "Google Place ID", "Tourist zone (yes/no)", "Proximity to relevant POIs", "Restaurant density within 500m radius", "Footfall zone (class)", "Predominant business area type", "Parking typology"], "pt": ["Morada completa", "Código postal", "Freguesia", "Concelho / Município", "Distrito / Região", "País", "Latitude", "Longitude", "Google Place ID", "Zona turística (sim/não)", "Proximidade a POIs relevantes", "Densidade de restaurantes no raio 500m", "Zona de footfall (classe)", "Área de negócio predominante na zona", "Tipologia de estacionamento"]}, {"en": ["Google average rating", "Total Google reviews count", "Google categories (primary)", "Google categories (secondary)", "Opening hours", "Closing day(s)", "Google price range (€/€€/€€€)", "Google attributes — accessibility, pet friendly, terrace", "Google attributes — delivery", "Google attributes — reservations", "Google photos count (owner)", "Google photos count (users)", "Website listed on Google", "Phone number listed on Google", "Claimed / not Claimed", "Has active Google Posts (last 30d)"], "pt": ["Rating médio Google", "Número total de reviews Google", "Categorias Google (principal)", "Categorias Google (secundárias)", "Horários de funcionamento", "Dia(s) de encerramento", "Faixa de preço Google (€/€€/€€€)", "Atributos Google (acessibilidade, pet friendly, esplanada, etc)", "Atributos Google (delivery)", "Atributos Google (reservas)", "Nº de fotos Google (owner)", "Nº de fotos Google (users)", "Website listado no Google", "Telefone listado no Google", "Claimed / Not Claimed no Google", "Tem Posts Google ativos (últimos 30d)"]}, {"en": ["Has own website (yes/no)", "Website URL", "Website has online menu", "Website has reservation system", "Website has e-commerce/delivery", "Contact email", "Main phone number", "Digital Maturity Index (0-100)", "Completeness score (% fields filled)", "Has Google Maps embed on website", "Website language(s)"], "pt": ["Tem website próprio (sim/não)", "URL do website", "Website tem menu online", "Website tem sistema de reservas", "Website tem e-commerce/delivery", "Email de contacto", "Telefone principal", "Digital Maturity Index (0-100)", "Completeness score (% informação disponível)", "Tem Google Maps embed no website", "Idioma(s) do website"]}, {"en": ["Google Place ID", "TripAdvisor URL / ID", "TheFork URL / ID", "Uber Eats URL / ID", "Glovo URL / ID", "Bolt Food URL / ID", "Instagram handle", "Facebook page ID / URL", "Cross-platform matching confidence", "DIG-IN internal UUID"], "pt": ["Google Place ID", "TripAdvisor URL / ID", "TheFork URL / ID", "Uber Eats URL / ID", "Glovo URL / ID", "Bolt Food URL / ID", "Instagram handle", "Facebook page ID / URL", "Cross-platform matching confidence", "DIG-IN internal UUID"]}, {"en": ["Last update date", "Number of sources with data for this venue", "Data quality score (0-100)", "Human validation (yes/no)", "Last field validation date"], "pt": ["Data da última atualização", "Nº de fontes com dados para este espaço", "Data quality score (0-100)", "Validação humana (sim/não)", "Data da última validação field"]}];
+const CITYXY={"Lisboa · Cais do Sodré": [38.7071, -9.1458], "Porto · Baixa": [41.1456, -8.6108], "Cascais": [38.6968, -9.4215], "Coimbra": [40.2075, -8.4292], "Braga": [41.5454, -8.4265], "Algarve · Lagos": [37.102, -8.6741], "Madrid · Malasaña": [40.4258, -3.7038], "Barcelona · El Born": [41.3851, 2.1811], "Valencia": [39.4699, -0.3763], "Sevilla": [37.3891, -5.9845], "Bilbao": [43.263, -2.935], "Berlin · Kreuzberg": [52.499, 13.403], "Berlin · Prenzlauer Berg": [52.54, 13.424], "Hamburg": [53.5511, 9.9937], "München": [48.1351, 11.582], "Köln": [50.9384, 6.9603], "London · Soho": [51.5133, -0.1348], "Manchester": [53.4808, -2.2426], "Edinburgh": [55.9533, -3.1883], "Birmingham": [52.4862, -1.8904], "Bristol": [51.4545, -2.5879], "Paris · Le Marais": [48.858, 2.36], "Lyon": [45.764, 4.8357], "Marseille": [43.2965, 5.3698], "Bordeaux": [44.8378, -0.5792], "Lille": [50.6292, 3.0573], "Amsterdam": [52.3702, 4.8952], "Rotterdam": [51.9244, 4.4777], "Utrecht": [52.0907, 5.1214], "Den Haag": [52.0787, 4.2887], "Brussels": [50.8467, 4.3525], "Antwerp": [51.2194, 4.4025], "Ghent": [51.0543, 3.7253], "Bruges": [51.2093, 3.2247], "Luxembourg City": [49.6116, 6.1319], "Esch-sur-Alzette": [49.4958, 5.9806], "Stockholm": [59.3293, 18.0686], "Göteborg": [57.7089, 11.9746], "Malmö": [55.605, 13.0038], "Oslo": [59.9139, 10.7522], "Bergen": [60.3913, 5.3221], "Trondheim": [63.4305, 10.3951], "Reykjavík": [64.1466, -21.9426], "Akureyri": [65.6885, -18.091], "Andorra la Vella": [42.5063, 1.5218], "Escaldes": [42.51, 1.538], "Monte-Carlo": [43.7402, 7.427], "La Condamine": [43.735, 7.421]};
 
 const MARKETS={
   PT:{ code:"PT", name:"Portugal", flag:"🇵🇹", status:"live", region:"Europe",
@@ -644,26 +664,9 @@ const MARKETS={
 };
 
 const MARKET_ORDER=["PT","ES","DE","GB","FR","NL","BE","LU","SE","NO","IS","AD","MC"];
-
-/* Real coordinates per city (map centering) and which countries have a live
-   per-country table in the Restaurant Discovery DB (real counts via /api/venues).
+/* Countries with a live per-country table in the Restaurant Discovery DB → real counts via /api/venues.
    LU · IS · AD · MC have no dedicated table yet — those fall back to the model estimate. */
 const REAL_DATA_COUNTRIES=new Set(["PT","ES","DE","GB","FR","NL","BE","SE","NO"]);
-const CITY_COORDS={
-  "Lisboa · Cais do Sodré":[38.7057,-9.1447], "Porto · Baixa":[41.1496,-8.6109], "Cascais":[38.6979,-9.4215], "Coimbra":[40.2033,-8.4103], "Braga":[41.5454,-8.4265], "Algarve · Lagos":[37.1021,-8.6746],
-  "Madrid · Malasaña":[40.4265,-3.7038], "Barcelona · El Born":[41.3851,2.1808], "Valencia":[39.4699,-0.3763], "Sevilla":[37.3891,-5.9845], "Bilbao":[43.2630,-2.9350],
-  "Berlin · Kreuzberg":[52.4996,13.4033], "Berlin · Prenzlauer Berg":[52.5391,13.4245], "Hamburg":[53.5511,9.9937], "München":[48.1351,11.5820], "Köln":[50.9375,6.9603],
-  "London · Soho":[51.5136,-0.1365], "Manchester":[53.4808,-2.2426], "Edinburgh":[55.9533,-3.1883], "Birmingham":[52.4862,-1.8904], "Bristol":[51.4545,-2.5879],
-  "Paris · Le Marais":[48.8589,2.3622], "Lyon":[45.7640,4.8357], "Marseille":[43.2965,5.3698], "Bordeaux":[44.8378,-0.5792], "Lille":[50.6292,3.0573],
-  "Amsterdam":[52.3676,4.9041], "Rotterdam":[51.9244,4.4777], "Utrecht":[52.0907,5.1214], "Den Haag":[52.0705,4.3007],
-  "Brussels":[50.8503,4.3517], "Antwerp":[51.2194,4.4025], "Ghent":[51.0543,3.7174], "Bruges":[51.2093,3.2247],
-  "Luxembourg City":[49.6116,6.1319], "Esch-sur-Alzette":[49.4958,5.9806],
-  "Stockholm":[59.3293,18.0686], "Göteborg":[57.7089,11.9746], "Malmö":[55.6050,13.0038],
-  "Oslo":[59.9139,10.7522], "Bergen":[60.3913,5.3221], "Trondheim":[63.4305,10.3951],
-  "Reykjavík":[64.1466,-21.9426], "Akureyri":[65.6835,-18.1002],
-  "Andorra la Vella":[42.5063,1.5218], "Escaldes":[42.5081,1.5397],
-  "Monte-Carlo":[43.7396,7.4275], "La Condamine":[43.7325,7.4204]
-};
 const STATUS_META={ live:"live", active:"active", road:"road" };
 const CATS_ALL=["Soft drinks","Energy","Mixers"];
 </script>
@@ -672,7 +675,7 @@ const CATS_ALL=["Soft drinks","Energy","Mixers"];
 let LANG="en", MK="PT", TAB="overview", CAT="Soft drinks";
 let wizStep=1, wizCountry="PT", wizCity=MARKETS.PT.cities[0], wizPin=null;
 let wizMap=null, wizMarker=null, wizCircle=null;
-let wizCount=null, wizCountLoading=false, wizCountReal=false;
+let wizPointLayers=[], wizCount=null, wizCountLoading=false, wizCountReal=false;
 let wizSel=new Set(DATAPOINTS.cats.map((c,i)=>c.k==="menu"?i:-1).filter(i=>i>=0));
 const $=id=>document.getElementById(id);
 
@@ -710,13 +713,13 @@ const DICT={
   why:[["Two markets are free.","Spain and Germany are already in our data — activation is weeks, not a build."],["The signal is already turning.","Germany shows Coca-Cola losing the menu to Mate brands. That is the reason to watch quarterly."],["One read, every market.","The same four lenses run in every country, so CCEP compares markets like-for-like."]],
   pl_kicker:"Request a pilot", pl_h:"Scope a pilot in <em>three steps</em>.", pl_lead:"Pick a country and area, draw a 250 m zone on the map, choose the data points you want. We come back within 48 hours.",
   ws1:"Where", ws1s:"country & area", ws2:"Data", ws2s:"pick data points", ws3:"Send", ws3s:"review & submit",
-  lbl_country:"Country", lbl_city:"City / area", canv_hint:"Click anywhere to drop a pin", rd_area:"Sample area", rd_venues:"Venues in zone", rd_help:"Drop a pin to draw a 250 m zone anywhere on the map.", rd_pending:"Drop a pin to continue",
+  lbl_country:"Country", lbl_city:"City / area", canv_hint:"Click the map to place a 250 m zone", rd_area:"Sample area", rd_venues:"Venues in zone", rd_help:"Zoom and drag the map, then click to place a 250 m zone anywhere.", rd_pending:"Drop a pin to continue",
   wiz_next1:"Next: choose data →", wiz_back:"← Back", wiz_next2:"Next: review →", wiz_submit:"Submit request",
   data_title:"Which data points do you want?", sel_all:"Select all", sel_clear:"Clear", tot_lbl:"data points / venue selected",
   sum_title:"Review your request", sum_country:"Country", sum_area:"Sample area", sum_venues:"Venues in zone", sum_cats:"Categories", sum_points:"Data points / venue",
   sent_h:"Request received", sent_p:"Our team will come back to you within 48 hours with the sample and a quote.", sent_ref:"Reference", sent_again:"New request",
   locked_h:"On the roadmap", locked_p:"This market is not read yet. See the business case and the recommended markets in Coverage — or scope a pilot here.",
-  venues_word:"venues"
+  dp_seeall:"See all fields", map_fallback:"The interactive map needs an internet connection. You can still pick the country and area above.", venues_word:"venues"
  },
  pt:{
   tab_overview:"Visão geral", tab_menu:"Presença na carta", tab_adjacency:"Adjacências", tab_execution:"Execução física", tab_price:"Preço & posição", tab_datapoints:"Data points", tab_coverage:"Cobertura & mercados", tab_pilot:"Pedir um piloto",
@@ -750,13 +753,13 @@ const DICT={
   why:[["Dois mercados estão de graça.","Espanha e Alemanha já estão nos nossos dados — ativar é semanas, não um construir."],["O sinal já está a virar.","A Alemanha mostra a Coca-Cola a perder a carta para as marcas de Mate. É a razão para acompanhar trimestralmente."],["Uma leitura, todos os mercados.","As mesmas quatro lentes correm em cada país, por isso a CCEP compara mercados a par."]],
   pl_kicker:"Pedir um piloto", pl_h:"Define um piloto em <em>três passos</em>.", pl_lead:"Escolhe um país e área, desenha uma zona de 250 m no mapa, escolhe os data points que queres. Respondemos em 48 horas.",
   ws1:"Onde", ws1s:"país & área", ws2:"Dados", ws2s:"escolher data points", ws3:"Enviar", ws3s:"rever & submeter",
-  lbl_country:"País", lbl_city:"Cidade / área", canv_hint:"Clica em qualquer sítio para largar o pino", rd_area:"Área da amostra", rd_venues:"Espaços na zona", rd_help:"Larga o pino para desenhar uma zona de 250 m em qualquer sítio do mapa.", rd_pending:"Larga o pino para continuar",
+  lbl_country:"País", lbl_city:"Cidade / área", canv_hint:"Clica no mapa para colocar uma zona de 250 m", rd_area:"Área da amostra", rd_venues:"Espaços na zona", rd_help:"Faz zoom e arrasta o mapa, depois clica para colocar uma zona de 250 m.", rd_pending:"Larga o pino para continuar",
   wiz_next1:"Seguinte: escolher dados →", wiz_back:"← Voltar", wiz_next2:"Seguinte: rever →", wiz_submit:"Submeter pedido",
   data_title:"Que data points queres?", sel_all:"Selecionar tudo", sel_clear:"Limpar", tot_lbl:"data points / espaço selecionados",
   sum_title:"Rever o pedido", sum_country:"País", sum_area:"Área da amostra", sum_venues:"Espaços na zona", sum_cats:"Categorias", sum_points:"Data points / espaço",
   sent_h:"Pedido recebido", sent_p:"A nossa equipa responde em 48 horas com a amostra e um orçamento.", sent_ref:"Referência", sent_again:"Novo pedido",
   locked_h:"No roadmap", locked_p:"Este mercado ainda não foi lido. Vê o business case e os mercados recomendados em Cobertura — ou define aqui um piloto.",
-  venues_word:"espaços"
+  dp_seeall:"Ver todos os campos", map_fallback:"O mapa interativo precisa de ligação à internet. Podes escolher o país e a área acima.", venues_word:"espaços"
  }
 };
 const T=new Proxy({},{get:(_,k)=>DICT[LANG][k]});
@@ -956,7 +959,7 @@ function renderDatapoints(){
   let h=hero(T.dp_kicker, T.dp_h, T.dp_lead, false);
   h+=`<div class="dpchips">${DP_LAYERS.map(l=>`<div class="dpchip ${l.ml?"on-menu":""}"><div class="dcn">${l.n}</div><div class="dcl">${layerLbl[l.k]}</div></div>`).join("")}</div>`;
   h+=`<div class="blockhead"><span class="num">${DATAPOINTS.total}</span><h3>${DATAPOINTS.total} ${T.dp_total} · 21 ${T.dp_cats}</h3></div>`;
-  h+=`<div class="dpgrid">${DATAPOINTS.cats.map(c=>`<div class="dpcard"><div class="dptop"><div class="dpcat">${tt(c.name)}</div><div class="dpn">${c.n}</div></div><span class="dplayer ${c.ml?"menu":""}">${layerLbl[c.k]}</span><div class="dpdesc">${tt(c.d)}</div></div>`).join("")}</div>`;
+  h+=`<div class="dpgrid">${DATAPOINTS.cats.map((c,i)=>`<details class="dpcard"><summary><div class="dptop"><div class="dpcat">${tt(c.name)}</div><div class="dpn">${c.n}</div></div><span class="dplayer ${c.ml?"menu":""}">${layerLbl[c.k]}</span><div class="dpdesc">${tt(c.d)}</div><div class="dpmore"><span class="chev">▾</span> ${T.dp_seeall} (${c.n})</div></summary><ul class="dpfull">${DP_FULL[i][LANG].map(x=>`<li>${x}</li>`).join("")}</ul></details>`).join("")}</div>`;
   $("dpWrap").innerHTML=h;
 }
 
@@ -996,70 +999,8 @@ function wizSteps(){
   const cur = wizStep==="sent"?4:wizStep;
   return `<div class="wizsteps">${s.map(([n,l,sub])=>`<div class="wizstep ${n===cur?"on":n<cur?"done":""}"><div class="wn">${n<cur?"✓":n}</div><div class="wl">${l}<small>${sub}</small></div></div>`).join("")}</div>`;
 }
-function wizIsReal(){ return REAL_DATA_COUNTRIES.has(wizCountry); }
 function wizVenuesEstimate(){ return Math.round(density(MARKETS[wizCountry])*0.16); }
-function wizCanvas(){
-  const badge = wizIsReal()
-    ? `<span class="databadge real">Restaurant Discovery DB</span>`
-    : `<span class="databadge est">${LANG==="en"?"Model estimate":"Estimativa do modelo"}</span>`;
-  return `<div class="wizcanvas">${badge}<div class="canvhint">${T.canv_hint}</div><div id="wizLeafletMap"></div></div>`;
-}
-let wizPointLayers=[];
-function wizInitMap(){
-  const el=document.getElementById("wizLeafletMap");
-  if(!el || typeof L==="undefined") return;
-  if(wizMap){ wizMap.remove(); wizMap=null; wizMarker=null; wizCircle=null; }
-  wizPointLayers=[];
-  const center = CITY_COORDS[wizCity] || CITY_COORDS[MARKETS[wizCountry].cities[0]] || [45,10];
-  wizMap=L.map(el,{zoomControl:true,attributionControl:true}).setView(center, 15);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-    maxZoom:19, attribution:'&copy; OpenStreetMap contributors'
-  }).addTo(wizMap);
-  el.style.background="#14171a";
-  const tilePane=el.querySelector(".leaflet-tile-pane");
-  if(tilePane) tilePane.style.filter="invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9)";
-  if(wizPin && wizPin.country===wizCountry && wizPin.city===wizCity){ dropAt(wizPin.lat,wizPin.lng,false); }
-  wizMap.on("click", e=>dropAt(e.latlng.lat, e.latlng.lng, true));
-}
-function clearPointLayers(){ wizPointLayers.forEach(l=>wizMap.removeLayer(l)); wizPointLayers=[]; }
-function plotPoints(points){
-  clearPointLayers();
-  (points||[]).forEach(p=>{
-    if(p.lat==null||p.lng==null) return;
-    const dot=L.circleMarker([p.lat,p.lng],{radius:4,color:"#4fd6ff",weight:1,fillColor:"#4fd6ff",fillOpacity:.85})
-      .bindTooltip(p.name||"", {direction:"top", offset:[0,-4]});
-    dot.addTo(wizMap);
-    wizPointLayers.push(dot);
-  });
-}
-function dropAt(lat,lng,fetchNew){
-  wizPin={lat,lng,country:wizCountry,city:wizCity};
-  if(wizMarker) wizMap.removeLayer(wizMarker);
-  if(wizCircle) wizMap.removeLayer(wizCircle);
-  wizMarker=L.circleMarker([lat,lng],{radius:6,color:"#e8ff4f",weight:2,fillColor:"#e8ff4f",fillOpacity:1}).addTo(wizMap);
-  wizCircle=L.circle([lat,lng],{radius:250,color:"#f5001d",weight:1.5,fillColor:"#f5001d",fillOpacity:.08}).addTo(wizMap);
-  document.querySelectorAll(".btnrow .btn.primary").forEach(b=>{ if(b.dataset.wizNext1) b.disabled=false; });
-  if(fetchNew) fetchVenueCount(lat,lng); else updateCountUI();
-}
-async function fetchVenueCount(lat,lng){
-  wizCountLoading=true; wizCount=null; updateCountUI();
-  if(!wizIsReal()){ wizCount=wizVenuesEstimate(); wizCountReal=false; wizCountLoading=false; updateCountUI(); if(wizMap)clearPointLayers(); return; }
-  try{
-    const cc=wizCountry.toLowerCase();
-    const res=await fetch(`/api/venues?country=${cc}&lat=${lat}&lng=${lng}&radius=250`);
-    const data=await res.json();
-    if(data && data.ok){ wizCount=data.venues; wizCountReal=true; plotPoints(data.points); }
-    else { wizCount=wizVenuesEstimate(); wizCountReal=false; if(wizMap)clearPointLayers(); }
-  }catch(e){ wizCount=wizVenuesEstimate(); wizCountReal=false; if(wizMap)clearPointLayers(); }
-  wizCountLoading=false; updateCountUI();
-}
-function updateCountUI(){
-  const v=document.getElementById("wizVenueReadout");
-  if(!v) return;
-  if(wizCountLoading){ v.innerHTML=`<span class="rdv loading">${LANG==="en"?"Counting…":"A contar…"}</span>`; return; }
-  if(wizCount==null){ v.innerHTML=`<span class="rdv">—</span>`; return; }
-  v.innerHTML=`<span class="rdv coke">~${fmt(wizCount)}</span>`;
-}
+
 function renderPilot(){
   const wrap=$("pilotWrap");
   if(wizStep==="sent"){
@@ -1070,9 +1011,8 @@ function renderPilot(){
   let h=hero(T.pl_kicker,T.pl_h,T.pl_lead,false)+wizSteps()+`<div class="wizpane">`;
   if(wizStep===1){
     const m=MARKETS[wizCountry];
-    const samePin = wizPin && wizPin.country===wizCountry && wizPin.city===wizCity;
-    h+=`<div class="wizgrid"><div><div class="selrow"><div class="selfield"><label>${T.lbl_country}</label><select class="fsel" onchange="wizSetCountry(this.value)">${MARKET_ORDER.map(c=>`<option value="${c}" ${c===wizCountry?"selected":""}>${MARKETS[c].flag}  ${MARKETS[c].name}</option>`).join("")}</select></div><div class="selfield"><label>${T.lbl_city}</label><select class="fsel" onchange="wizSetCity(this.value)">${m.cities.map(c=>`<option ${c===wizCity?"selected":""}>${c}</option>`).join("")}</select></div></div>${wizCanvas()}</div><div class="wizside"><div class="wizreadout"><div class="rd"><span class="rdk">${T.rd_area}</span><span class="rdv acc">250 m</span></div><div class="rd"><span class="rdk">${T.rd_venues}</span><span id="wizVenueReadout">${samePin?"":"<span class='rdv'>—</span>"}</span></div></div><div style="font-size:12px;color:var(--ink-faint);line-height:1.55">${T.rd_help}</div></div></div>`;
-    h+=`<div class="btnrow"><span></span><button class="btn primary" data-wiz-next1="1" ${samePin?"":"disabled"} onclick="wizGo(2)">${samePin?T.wiz_next1:T.rd_pending}</button></div>`;
+    h+=`<div class="wizgrid"><div><div class="selrow"><div class="selfield"><label>${T.lbl_country}</label><select class="fsel" onchange="wizSetCountry(this.value)">${MARKET_ORDER.map(c=>`<option value="${c}" ${c===wizCountry?"selected":""}>${MARKETS[c].flag}  ${MARKETS[c].name}</option>`).join("")}</select></div><div class="selfield"><label>${T.lbl_city}</label><select class="fsel" onchange="wizSetCity(this.value)">${m.cities.map(c=>`<option ${c===wizCity?"selected":""}>${c}</option>`).join("")}</select></div></div><div class="wizmapwrap"><div class="canvhint">${T.canv_hint}</div>${REAL_DATA_COUNTRIES.has(wizCountry)?`<span class="databadge real">Restaurant Discovery DB</span>`:`<span class="databadge est">${LANG==="en"?"Model estimate":"Estimativa do modelo"}</span>`}<div id="wizmap"></div></div></div><div class="wizside"><div class="wizreadout"><div class="rd"><span class="rdk">${T.rd_area}</span><span class="rdv acc">250 m</span></div><div class="rd"><span class="rdk">${T.rd_venues}</span><span class="rdv coke" id="rdVenues">${wizPin?"~"+fmt(wizCount!=null?wizCount:wizVenuesEstimate()):"—"}</span></div></div><div style="font-size:12px;color:var(--ink-faint);line-height:1.55">${T.rd_help}</div></div></div>`;
+    h+=`<div class="btnrow"><span></span><button class="btn primary" id="wizNext" ${wizPin?"":"disabled"} onclick="wizGo(2)">${wizPin?T.wiz_next1:T.rd_pending}</button></div>`;
   } else if(wizStep===2){
     const byLayer={};DATAPOINTS.cats.forEach((c,i)=>{(byLayer[c.k]=byLayer[c.k]||[]).push(i);});
     const layerLbl={menu:T.layer_menu,exec:T.layer_exec,adj:T.layer_adj,price:T.layer_price,found:T.layer_found};
@@ -1086,17 +1026,70 @@ function renderPilot(){
   } else if(wizStep===3){
     let total=0,cats=0; wizSel.forEach(i=>{total+=DATAPOINTS.cats[i].n;cats++;});
     const m=MARKETS[wizCountry];
-    const cVal = wizCount!=null ? wizCount : wizVenuesEstimate();
-    h+=`<div class="sumcard"><div class="sumrow"><span class="sk">${T.sum_country}</span><span class="sv">${m.flag} ${m.name}</span></div><div class="sumrow"><span class="sk">${T.lbl_city}</span><span class="sv">${wizCity}</span></div><div class="sumrow"><span class="sk">${T.sum_area}</span><span class="sv">250 m · <b>~${fmt(cVal)}</b> ${T.venues_word}</span></div><div class="sumrow"><span class="sk">${T.sum_cats}</span><span class="sv">${cats} / 21</span></div><div class="sumrow"><span class="sk">${T.sum_points}</span><span class="sv"><b>${total}</b></span></div></div>`;
+    h+=`<div class="sumcard"><div class="sumrow"><span class="sk">${T.sum_country}</span><span class="sv">${m.flag} ${m.name}</span></div><div class="sumrow"><span class="sk">${T.lbl_city}</span><span class="sv">${wizCity}</span></div><div class="sumrow"><span class="sk">${T.sum_area}</span><span class="sv">250 m · <b>~${fmt(wizCount!=null?wizCount:wizVenuesEstimate())}</b> ${T.venues_word}</span></div><div class="sumrow"><span class="sk">${T.sum_cats}</span><span class="sv">${cats} / 21</span></div><div class="sumrow"><span class="sk">${T.sum_points}</span><span class="sv"><b>${total}</b></span></div></div>`;
     h+=`<div class="btnrow"><button class="btn ghost" onclick="wizGo(2)">${T.wiz_back}</button><button class="btn primary" onclick="wizSubmit()">${T.wiz_submit}</button></div>`;
   }
   h+=`</div>`;
   wrap.innerHTML=h;
-  if(wizStep===1){ wizInitMap(); if(wizPin && wizPin.country===wizCountry && wizPin.city===wizCity) fetchVenueCount(wizPin.lat,wizPin.lng); }
+  if(wizStep===1) setupWizMap();
 }
-function wizGo(s){ wizStep=s; renderPilot(); }
-function wizSetCountry(c){ wizCountry=c; wizCity=MARKETS[c].cities[0]; wizCount=null; renderPilot(); }
-function wizSetCity(v){ wizCity=v; wizCount=null; renderPilot(); }
+function clearPointLayers(){ wizPointLayers.forEach(l=>{ try{wizMap.removeLayer(l);}catch(e){} }); wizPointLayers=[]; }
+function plotPoints(points){
+  clearPointLayers();
+  (points||[]).forEach(p=>{
+    if(p.lat==null||p.lng==null) return;
+    const dot=L.circleMarker([p.lat,p.lng],{radius:4,color:"#4fd6ff",weight:1,fillColor:"#4fd6ff",fillOpacity:.85}).bindTooltip(p.name||"",{direction:"top",offset:[0,-4]});
+    dot.addTo(wizMap); wizPointLayers.push(dot);
+  });
+}
+function updateCountUI(){
+  const v=$("rdVenues"); if(!v) return;
+  if(wizCountLoading){ v.textContent=LANG==="en"?"Counting…":"A contar…"; v.classList.add("loading"); return; }
+  v.classList.remove("loading");
+  v.textContent = wizCount==null ? "—" : "~"+fmt(wizCount);
+}
+async function fetchVenueCount(lat,lng){
+  wizCountLoading=true; wizCount=null; updateCountUI();
+  if(!REAL_DATA_COUNTRIES.has(wizCountry)){ wizCount=wizVenuesEstimate(); wizCountReal=false; wizCountLoading=false; updateCountUI(); if(wizMap)clearPointLayers(); return; }
+  try{
+    const cc=wizCountry.toLowerCase();
+    const res=await fetch(`/api/venues?country=${cc}&lat=${lat}&lng=${lng}&radius=250`);
+    const data=await res.json();
+    if(data && data.ok){ wizCount=data.venues; wizCountReal=true; plotPoints(data.points); }
+    else { wizCount=wizVenuesEstimate(); wizCountReal=false; if(wizMap)clearPointLayers(); }
+  }catch(e){ wizCount=wizVenuesEstimate(); wizCountReal=false; if(wizMap)clearPointLayers(); }
+  wizCountLoading=false; updateCountUI();
+}
+function setupWizMap(){
+  const el=$("wizmap"); if(!el) return;
+  if(typeof L==="undefined"){ el.innerHTML=`<div class="mapfallback">${T.map_fallback}</div>`; return; }
+  if(wizMap){ try{wizMap.remove();}catch(e){} wizMap=null; wizMarker=null; wizCircle=null; }
+  wizPointLayers=[];
+  const c=CITYXY[wizCity]||CITYXY[MARKETS[wizCountry].cities[0]]||[38.72,-9.14];
+  wizMap=L.map(el,{scrollWheelZoom:true,zoomControl:true}).setView(c,15);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap contributors"}).addTo(wizMap);
+  wizMap.on("click",e=>placeWizPin(e.latlng,false));
+  setTimeout(()=>{ try{
+    wizMap.invalidateSize();
+    const tp=el.querySelector(".leaflet-tile-pane");
+    if(tp) tp.style.filter="invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9)";
+  }catch(e){} },60);
+  if(wizPin){ placeWizPin(L.latLng(wizPin.lat,wizPin.lng),true); }
+}
+function placeWizPin(latlng,restore){
+  wizPin={lat:latlng.lat,lng:latlng.lng};
+  const nb=$("wizNext"); if(nb){ nb.disabled=false; nb.textContent=T.wiz_next1; }
+  if(wizMap&&typeof L!=="undefined"){
+    if(wizCircle)wizMap.removeLayer(wizCircle); if(wizMarker)wizMap.removeLayer(wizMarker);
+    wizCircle=L.circle(latlng,{radius:250,color:"#f5001d",weight:1.5,fillColor:"#f5001d",fillOpacity:.08}).addTo(wizMap);
+    wizMarker=L.circleMarker(latlng,{radius:6,color:"#e8ff4f",fillColor:"#e8ff4f",fillOpacity:1,weight:2}).addTo(wizMap);
+    if(!restore)wizMap.panTo(latlng);
+  }
+  fetchVenueCount(latlng.lat,latlng.lng);
+}
+function wizGo(s){ if(s!==1&&wizMap){try{wizMap.remove();}catch(e){}wizMap=null;wizMarker=null;wizCircle=null;} wizStep=s; renderPilot(); }
+function wizSetCountry(c){ wizCountry=c; wizCity=MARKETS[c].cities[0]; wizPin=null; wizCount=null; renderPilot(); }
+function wizSetCity(v){ wizCity=v; wizPin=null; wizCount=null; renderPilot(); }
 function wizTog(i){ if(wizSel.has(i))wizSel.delete(i); else wizSel.add(i); renderPilot(); }
 function wizAll(){ DATAPOINTS.cats.forEach((c,i)=>wizSel.add(i)); renderPilot(); }
 function wizClear(){ wizSel.clear(); renderPilot(); }
