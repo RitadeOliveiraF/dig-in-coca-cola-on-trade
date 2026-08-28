@@ -904,7 +904,7 @@ function renderMenu(m){
   h+=`<div class="blockhead"><span class="num">02</span><h3>${T.rank_title} · ${CAT}</h3></div>`;
   h+=`<table class="btable"><thead><tr><th>#</th><th>${T.bt_brand}</th><th>${T.bt_onmenu}</th><th class="num">${T.bt_qoq}</th></tr></thead><tbody>${top.map((t,i)=>{
     const [n,v,d]=t, own=isCCEP(n,m), col=own?"var(--coke)":"#586470", dc=d>0?"up":d<0?"dn":"flat", ds=(d>0?"+":"")+d;
-    return `<tr><td class="rank">${i+1}</td><td><span class="bname">${n}</span>${own?`<span class="owntag">CCEP</span>`:""}</td><td><span class="pbar-track"><span class="pbar-fill" data-w="${Math.round(v/mx*100)}%" style="background:${col}"></span></span><span class="cc">${v}%</span></td><td class="num"><span class="delta ${dc}">${ds}</span></td></tr>`;
+    return `<tr><td class="rank">${i+1}</td><td><span class="bname">${n}</span></td><td><span class="pbar-track"><span class="pbar-fill" data-w="${Math.round(v/mx*100)}%" style="background:${col}"></span></span><span class="cc">${v}%</span></td><td class="num"><span class="delta ${dc}">${ds}</span></td></tr>`;
   }).join("")}</tbody></table>`;
   $("menuWrap").innerHTML=h;
 }
