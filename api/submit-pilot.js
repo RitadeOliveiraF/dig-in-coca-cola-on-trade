@@ -78,6 +78,7 @@ module.exports = async (req, res) => {
         const flagMap = { PT: "🇵🇹", ES: "🇪🇸", DE: "🇩🇪", GB: "🇬🇧", FR: "🇫🇷", NL: "🇳🇱", BE: "🇧🇪", LU: "🇱🇺", SE: "🇸🇪", NO: "🇳🇴", IS: "🇮🇸", AD: "🇦🇩", MC: "🇲🇨" };
         const flag = flagMap[countryCode] || "🌍";
         const fieldsList = selectedFields.length ? selectedFields.map(f => `• ${f}`).join("\n") : "—";
+        const mapsLink = (lat != null && lng != null) ? `https://www.google.com/maps?q=${lat},${lng}` : null;
         const text = `*New pilot request* · ${flag} ${countryName || countryCode || "?"} · ${city || "?"}\n` +
           `Reference: \`${reference}\`\n` +
           `Sample area: 250 m · ~${venueCount ?? "?"} venues (${venueCountSource})\n` +
@@ -89,13 +90,16 @@ module.exports = async (req, res) => {
           body: JSON.stringify({
             text,
             blocks: [
-              { type: "section", text: { type: "mrkdwn", text: `*🔔 New pilot request* · ${flag} ${countryName || countryCode || "?"} · ${city || "?"}` } },
+              { type: "section", text: { type: "mrkdwn", text: `*🔔 New pilot request*` } },
               { type: "section", fields: [
+                { type: "mrkdwn", text: `*Country:*\n${flag} ${countryName || countryCode || "?"}` },
+                { type: "mrkdwn", text: `*City / area:*\n${city || "?"}` },
                 { type: "mrkdwn", text: `*Reference:*\n\`${reference}\`` },
                 { type: "mrkdwn", text: `*Venues in zone:*\n~${venueCount ?? "?"} (${venueCountSource})` },
                 { type: "mrkdwn", text: `*Data points:*\n${dataPointsTotal ?? "?"} / ${dataPointsCats ?? "?"} categories` },
                 { type: "mrkdwn", text: `*Project:*\n${project}` },
               ]},
+              { type: "section", text: { type: "mrkdwn", text: `*Pin location:*\n${lat != null && lng != null ? `${lat.toFixed(6)}, ${lng.toFixed(6)}${mapsLink ? ` — <${mapsLink}|open in Google Maps>` : ""}` : "—"}` } },
               { type: "section", text: { type: "mrkdwn", text: `*Selected categories:*\n${fieldsList}` } },
             ],
           }),
