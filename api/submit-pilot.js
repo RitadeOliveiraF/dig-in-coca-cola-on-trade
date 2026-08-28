@@ -120,3 +120,4 @@ module.exports = async (req, res) => {
     res.status(500).json({ ok: false, reason: "exception", message: String(e && e.message || e) });
   }
 };
+// Slack webhook wired 2026-08-28T10:04:05Z
