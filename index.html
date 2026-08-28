@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIG-IN · Coca-Cola On-Trade Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0e10; --panel:#14171a; --panel-2:#191d21; --panel-3:#20262b;
+  --line:#262b30; --line-2:#333a41;
+  --ink:#eef1f2; --ink-dim:#aab2b8; --ink-faint:#6c757d;
+  --accent:#e8ff4f; --accent-deep:#c8df2e; --accent-ink:#0c0e10;
+  --coke:#f5001d; --coke-2:#ff5563; --coke-deep:#b30d18;
+  --live:#46e08f; --avail:#4fd6ff; --road:#586470;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+.mono{font-family:'JetBrains Mono',monospace}
+em{font-style:italic}
+b{font-weight:700}
+
+/* ============ HEADER ============ */
+.app{position:sticky;top:0;z-index:50;background:rgba(12,14,16,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.app-in{display:flex;align-items:center;gap:20px;max-width:1300px;margin:0 auto;padding:13px 30px}
+.brand{font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.15em;font-size:16px;color:var(--ink)}
+.brand span{color:var(--accent)}
+.appctx{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);padding-left:18px;border-left:1px solid var(--line-2);line-height:1.4}
+.appctx b{color:var(--ink-dim);font-weight:500}
+.spacer{flex:1}
+
+/* market selector */
+.msel{position:relative}
+.msel-btn{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--line-2);border-radius:7px;padding:8px 13px;cursor:pointer;transition:border-color .15s}
+.msel-btn:hover{border-color:var(--ink-faint)}
+.msel-btn .mflag{font-size:17px}
+.msel-btn .mnm{font-size:13.5px;font-weight:600}
+.msel-btn .mst{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+.msel-btn .mst.live{color:var(--live)} .msel-btn .mst.active{color:var(--avail)} .msel-btn .mst.road{color:var(--ink-faint)}
+.stdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.stdot.live{background:var(--live)} .stdot.active{background:var(--avail)} .stdot.road{background:var(--road)}
+.msel-btn .chev{margin-left:2px;color:var(--ink-faint);font-size:10px}
+.msel-panel{position:absolute;top:calc(100% + 8px);right:0;width:330px;max-height:74vh;overflow-y:auto;background:var(--panel);border:1px solid var(--line-2);border-radius:9px;box-shadow:0 22px 60px rgba(0,0,0,.55);opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .16s;padding:7px}
+.msel.open .msel-panel{opacity:1;visibility:visible;transform:none}
+.grp{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);padding:12px 11px 6px;display:flex;justify-content:space-between}
+.mopt{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;border-radius:6px;padding:9px 11px;cursor:pointer;transition:background .12s}
+.mopt:hover{background:var(--panel-2)} .mopt.sel{background:var(--panel-3)}
+.mopt.rec{box-shadow:inset 2px 0 0 var(--coke)}
+.mopt .flag{font-size:17px} .mopt .nm{flex:1;font-size:13.5px;font-weight:500}
+.mopt .nm small{display:block;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-faint);font-weight:400;margin-top:1px;text-transform:none;letter-spacing:0}
+.mopt .poi{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-dim);text-align:right;line-height:1.2}
+
+/* language toggle */
+.lang{display:flex;border:1px solid var(--line-2);border-radius:7px;overflow:hidden}
+.lang button{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.04em;padding:8px 11px;background:var(--panel);color:var(--ink-faint);border:none;cursor:pointer;transition:all .13s}
+.lang button.on{background:var(--accent);color:var(--accent-ink)}
+
+/* ============ TABS ============ */
+.tabsbar{position:sticky;top:57px;z-index:40;background:rgba(12,14,16,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs{display:flex;max-width:1300px;margin:0 auto;padding:0 22px}
+.tab{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-faint);background:none;border:none;border-bottom:2px solid transparent;padding:14px 15px;cursor:pointer;white-space:nowrap;transition:color .14s}
+.tab:hover{color:var(--ink-dim)}
+.tab.on{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .tnum{font-size:10px;color:var(--accent);opacity:.85}
+.tab.on .tnum{opacity:1}
+
+/* ============ LAYOUT ============ */
+main{max-width:1300px;margin:0 auto}
+.view{display:none} .view.on{display:block}
+.section{padding:44px 30px 60px}
+@media(max-width:640px){.section{padding:32px 20px 48px}}
+.kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.headrow{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.big{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(30px,4.6vw,52px);line-height:1.02;letter-spacing:-.02em;max-width:19ch}
+.big em{color:var(--accent)}
+.lead{font-size:16px;color:var(--ink-dim);max-width:66ch;margin-top:18px;line-height:1.6}
+.demo-flag{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);border:1px solid var(--line-2);border-radius:20px;padding:5px 12px;white-space:nowrap;flex-shrink:0}
+
+.blockhead{margin:42px 0 5px;display:flex;align-items:baseline;gap:13px}
+.blockhead .num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--accent)}
+.blockhead h3{font-family:'Fraunces',serif;font-size:24px;font-weight:600;letter-spacing:-.01em}
+.blocksub{color:var(--ink-faint);font-size:13.5px;margin-bottom:20px;max-width:74ch;line-height:1.55}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:28px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--panel);padding:18px 20px}
+.kpi .k{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.kpi .v{font-family:'JetBrains Mono',monospace;font-size:27px;font-weight:700;line-height:1;margin:9px 0 6px}
+.kpi .v.coke{color:var(--coke-2)}
+.kpi .d{font-size:11.5px;color:var(--ink-dim);line-height:1.4}
+.up{color:var(--live)} .dn{color:var(--coke-2)}
+
+/* preview / layer cards */
+.previewgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:8px}
+@media(max-width:820px){.previewgrid{grid-template-columns:1fr 1fr}}
+.pvcell{background:var(--panel);padding:20px}
+.pvcell .pi{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent)}
+.pvcell .ph{font-family:'Fraunces',serif;font-size:17px;font-weight:600;margin:9px 0 7px}
+.pvcell .pp{font-size:12.5px;color:var(--ink-dim);line-height:1.5}
+
+/* zone table */
+.ztable-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;margin-top:6px}
+.ztable{width:100%;border-collapse:collapse;min-width:640px}
+.ztable th{text-align:left;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);padding:14px 18px;background:var(--panel-2);font-weight:500;white-space:nowrap}
+.ztable th.num,.ztable td.num{text-align:right}
+.ztable td{padding:14px 18px;border-top:1px solid var(--line);font-size:13.5px}
+.ztable tr:hover td{background:var(--panel-2)}
+.zn{font-weight:600} .zb{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);margin-left:5px}
+.mini{display:inline-block;width:52px;height:5px;background:var(--panel-3);border-radius:3px;overflow:hidden;vertical-align:middle;margin-right:8px}
+.minif{display:block;height:100%;background:var(--coke);width:0;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.cc{font-family:'JetBrains Mono',monospace;font-size:12.5px}
+.delta{font-family:'JetBrains Mono',monospace;font-size:12px}
+.delta.up{color:var(--live)} .delta.dn{color:var(--coke-2)} .delta.flat{color:var(--ink-faint)}
+
+/* share of menu */
+.somrow{margin-top:8px}
+.somtop{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:9px}
+.somtop b{color:var(--coke-2)}
+.somstack{display:flex;height:52px;border-radius:5px;overflow:hidden;border:1px solid var(--line)}
+.somseg{height:100%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:#fff;width:0;transition:width .7s cubic-bezier(.2,.8,.2,1);overflow:hidden;min-width:0}
+.somseg:not(.ccep){color:var(--accent-ink)}
+.somleg{display:flex;flex-wrap:wrap;gap:7px 16px;margin-top:14px}
+.somleg span{font-size:12px;color:var(--ink-dim);display:flex;align-items:center;gap:7px}
+.sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.note{font-size:13.5px;color:var(--ink-dim);line-height:1.6;margin-top:18px;background:var(--panel);border-left:2px solid var(--coke);border-radius:0 6px 6px 0;padding:15px 18px}
+.note b{color:var(--ink)}
+
+/* brand table */
+.btable{width:100%;border-collapse:collapse;margin-top:6px}
+.btable th{text-align:left;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);padding:12px 16px;border-bottom:1px solid var(--line);font-weight:500}
+.btable th.num,.btable td.num{text-align:right}
+.btable td{padding:11px 16px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:middle}
+.rank{font-family:'JetBrains Mono',monospace;color:var(--ink-faint);font-size:12px;width:34px}
+.bname{font-weight:500}
+.owntag{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.05em;background:rgba(245,0,29,.14);color:var(--coke-2);border:1px solid rgba(245,0,29,.32);border-radius:3px;padding:2px 5px;margin-left:8px}
+.pbar-track{display:inline-block;width:72px;height:6px;background:var(--panel-3);border-radius:3px;overflow:hidden;vertical-align:middle;margin-right:10px}
+.pbar-fill{display:block;height:100%;width:0;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.catbtns{display:flex;gap:7px;flex-wrap:wrap;margin:22px 0 4px}
+.catbtn{font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:7px 13px;background:var(--panel-2);border:1px solid var(--line-2);color:var(--ink-dim);cursor:pointer;border-radius:6px;transition:all .13s}
+.catbtn:hover:not(:disabled){border-color:var(--ink-faint)}
+.catbtn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.catbtn:disabled{opacity:.34;cursor:not-allowed}
+
+/* adjacency */
+.adjrow{display:grid;grid-template-columns:190px 1fr 44px;align-items:center;gap:14px;padding:8px 0}
+@media(max-width:640px){.adjrow{grid-template-columns:120px 1fr 38px}}
+.adjrow .name{font-size:13px}
+.idxtrack{position:relative;height:22px;background:var(--panel-2);border-radius:4px;overflow:hidden}
+.idxbase{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line-2)}
+.idxfill{position:absolute;left:50%;top:0;bottom:0;background:linear-gradient(90deg,var(--coke-deep),var(--coke));border-radius:0 4px 4px 0;width:0;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.idxfill.under{left:auto;right:50%;border-radius:4px 0 0 4px;background:linear-gradient(90deg,#586470,#3a4046)}
+.idxval{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-dim);text-align:right}
+.rivalrow{display:grid;grid-template-columns:190px 1fr 44px;align-items:center;gap:14px;padding:6px 0}
+@media(max-width:640px){.rivalrow{grid-template-columns:120px 1fr 38px}}
+.rtrack{height:8px;background:var(--panel-2);border-radius:4px;overflow:hidden}
+.rfill{display:block;height:100%;background:linear-gradient(90deg,#3a4046,#586470);width:0;transition:width .7s}
+.rpct{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-dim);text-align:right}
+
+/* placement */
+.placement-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.placement-head .pt{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim)}
+.plegend{display:flex;gap:16px}
+.plegend span{font-size:11.5px;color:var(--ink-dim);display:flex;align-items:center;gap:7px}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+@media(max-width:820px){.pgrid{grid-template-columns:1fr}}
+.pzone-name{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:13px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.matrow{display:grid;grid-template-columns:1fr;gap:5px;margin-bottom:13px}
+.mname{font-size:12.5px;color:var(--ink-dim)}
+.matbar{display:flex;align-items:center;gap:9px}
+.mt{flex:1;height:9px;background:var(--panel-2);border-radius:5px;overflow:hidden}
+.mf{display:block;height:100%;width:0;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.mf.lead{background:linear-gradient(90deg,var(--coke-deep),var(--coke))}
+.mf.chal{background:#586470}
+.mv{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);width:26px;text-align:right}
+
+/* exec gap */
+.execline{display:grid;grid-template-columns:210px 1fr 70px;align-items:center;gap:14px;padding:9px 0}
+@media(max-width:640px){.execline{grid-template-columns:130px 1fr 56px}}
+.execline .en{font-size:13px}
+.etr{position:relative;height:24px;background:var(--panel-2);border-radius:5px;overflow:hidden}
+.elist{position:absolute;left:0;top:0;bottom:0;background:rgba(245,0,29,.18);width:0;transition:width .7s}
+.edeep{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--coke-deep),var(--coke));width:0;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.eg{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);text-align:right}
+.eg b{color:var(--coke-2)}
+.exec-note{font-size:12.5px;color:var(--ink-faint);line-height:1.55;margin-top:14px;grid-column:1/-1}
+
+/* price */
+.price-block{display:flex;flex-direction:column;gap:24px;margin-top:6px}
+.pricehead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+.pricehead .cat{font-size:14px;font-weight:600}
+.pricehead .idx{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--ink-dim)}
+.pricehead .idx b{color:var(--ink)}
+.pricesplit{display:flex;height:30px;border-radius:5px;overflow:hidden;border:1px solid var(--line)}
+.pricesplit div{width:0;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.pricelabels{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-faint);margin-top:7px}
+.clusterwrap{position:relative;height:280px;background:var(--panel);border:1px solid var(--line);border-radius:6px;margin-top:8px;overflow:hidden}
+.cpt{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:5px}
+.cd{width:12px;height:12px;border-radius:50%;background:var(--coke);box-shadow:0 0 0 4px rgba(245,0,29,.18)}
+.cl{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);white-space:nowrap}
+.clusaxis{position:absolute;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-faint);letter-spacing:.05em;text-transform:uppercase}
+
+/* insights */
+.verdict{display:flex;gap:22px;align-items:center;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 7px 7px 0;padding:22px 24px;margin-top:6px}
+@media(max-width:640px){.verdict{flex-direction:column;align-items:flex-start;gap:14px}}
+.vscore{text-align:center;flex-shrink:0}
+.vn{font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:700;color:var(--accent);line-height:1}
+.vl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-top:5px;max-width:100px}
+.vtext{font-size:14.5px;color:var(--ink-dim);line-height:1.6}
+.vtext b{color:var(--ink)}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media(max-width:820px){.panels{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:20px 22px}
+.panel h4{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.panel h4 .tag{font-size:9px;color:var(--ink-faint);text-transform:none;letter-spacing:0}
+.ins-list{display:flex;flex-direction:column;gap:12px}
+.irow{display:flex;gap:11px;align-items:flex-start}
+.ic{width:8px;height:8px;border-radius:2px;margin-top:6px;flex-shrink:0}
+.ic.win{background:var(--live)} .ic.lose{background:var(--coke)}
+.itx{font-size:13px;color:var(--ink-dim);line-height:1.5}
+.itx b{color:var(--ink)}
+.wsgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+@media(max-width:820px){.wsgrid{grid-template-columns:1fr}}
+.wscell{background:var(--panel);padding:20px}
+.wt{font-size:15px;font-weight:600;margin-bottom:8px}
+.wtag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:3px}
+.wtag.grow{background:rgba(70,224,143,.13);color:var(--live)}
+.wtag.def{background:rgba(232,255,79,.12);color:var(--accent)}
+.wnote{font-size:12.5px;color:var(--ink-dim);line-height:1.5;margin-top:10px}
+
+/* banners + CTA */
+.banner{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;border-radius:8px;padding:20px 24px}
+.banner.pilot{background:linear-gradient(120deg,rgba(79,214,255,.09),transparent);border:1px solid rgba(79,214,255,.28)}
+.banner.road{background:var(--panel);border:1px solid var(--line-2)}
+.bh{font-family:'Fraunces',serif;font-size:19px;font-weight:600}
+.bs{font-size:13px;color:var(--ink-dim);margin-top:4px}
+.cta{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;padding:11px 18px;border-radius:7px;border:none;cursor:pointer;white-space:nowrap;transition:all .14s}
+.cta.primary{background:var(--accent);color:var(--accent-ink)}
+.cta.primary:hover{background:var(--accent-deep)}
+.cta.ghost{background:var(--panel-2);color:var(--ink);border:1px solid var(--line-2)}
+
+/* data points */
+.dpchips{display:flex;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:26px}
+@media(max-width:820px){.dpchips{flex-wrap:wrap}}
+.dpchip{background:var(--panel);padding:18px 20px;flex:1;min-width:145px}
+.dpchip .dcn{font-family:'JetBrains Mono',monospace;font-size:25px;font-weight:700;line-height:1}
+.dpchip .dcl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-top:8px}
+.dpchip.on-menu .dcn{color:var(--coke-2)}
+.dpgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+@media(max-width:900px){.dpgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.dpgrid{grid-template-columns:1fr}}
+.dpcard{background:var(--panel);padding:18px;transition:background .14s}
+.dpcard:hover{background:var(--panel-2)}
+.dptop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.dpcat{font-size:13.5px;font-weight:600;line-height:1.25}
+.dpn{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:700;color:var(--coke-2);flex-shrink:0}
+.dplayer{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:3px;background:var(--panel-3);color:var(--ink-dim);border:1px solid var(--line-2);margin:9px 0 11px}
+.dplayer.menu{background:rgba(245,0,29,.12);color:var(--coke-2);border-color:rgba(245,0,29,.3)}
+.dpdesc{font-size:12.5px;color:var(--ink-dim);line-height:1.5}
+
+/* coverage */
+.scalebar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:8px}
+@media(max-width:820px){.scalebar{grid-template-columns:1fr 1fr}}
+.scalestat{background:var(--panel);padding:20px}
+.scalestat .sv{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;line-height:1}
+.scalestat .sv.coke{color:var(--coke-2)} .scalestat .sv.acc{color:var(--accent)}
+.scalestat .sk{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-top:8px}
+.scalestat .sn{font-size:11.5px;color:var(--ink-dim);margin-top:5px;line-height:1.45}
+.covtop{display:grid;grid-template-columns:1fr 200px;gap:26px;align-items:center}
+@media(max-width:820px){.covtop{grid-template-columns:1fr}}
+.gauge{display:flex;flex-direction:column;align-items:center;gap:12px}
+.mkgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+@media(max-width:900px){.mkgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.mkgrid{grid-template-columns:1fr}}
+.mktile{background:var(--panel);padding:16px 17px;cursor:pointer;transition:background .14s;position:relative}
+.mktile:hover{background:var(--panel-2)}
+.mktile.rec{box-shadow:inset 3px 0 0 var(--coke)}
+.rflag{position:absolute;top:12px;right:12px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.04em;text-transform:uppercase;background:rgba(245,0,29,.14);color:var(--coke-2);border:1px solid rgba(245,0,29,.3);border-radius:3px;padding:2px 6px}
+.mkflag{font-size:20px}
+.mkname{font-size:14.5px;font-weight:600;margin:9px 0 6px}
+.mkst{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.mkst.live{color:var(--live)} .mkst.active{color:var(--avail)} .mkst.road{color:var(--ink-faint)}
+.mkpoi{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:700}
+.mkpoi small{display:block;font-size:8.5px;letter-spacing:.05em;color:var(--ink-faint);margin-top:3px}
+.mkbar{height:5px;background:var(--panel-3);border-radius:3px;overflow:hidden;margin-top:12px}
+.mkbf{display:block;height:100%;width:0;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.conf{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:3px;margin-top:10px;display:inline-block}
+.conf.alta{background:rgba(70,224,143,.12);color:var(--live);border:1px solid rgba(70,224,143,.28)}
+.conf.media{background:rgba(232,255,79,.1);color:var(--accent);border:1px solid rgba(232,255,79,.24)}
+.conf.baixa{background:rgba(120,132,144,.13);color:var(--ink-dim);border:1px solid var(--line-2)}
+.compgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+@media(max-width:820px){.compgrid{grid-template-columns:1fr 1fr}}
+.compcell{background:var(--panel);padding:18px}
+.compcell.us{background:linear-gradient(160deg,rgba(232,255,79,.08),transparent);outline:1px solid rgba(232,255,79,.28);outline-offset:-1px}
+.compcell .cpn{font-size:14px;font-weight:600} .compcell.us .cpn{color:var(--accent)}
+.compcell .cpb{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-faint);margin:3px 0 11px}
+.compcell .cpm{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-dim)} .compcell .cpm b{color:var(--ink)}
+.compcell .cpp{font-size:11.5px;color:var(--ink-dim);margin-top:7px;line-height:1.45}
+.recgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.recgrid{grid-template-columns:1fr}}
+.reccard{background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:22px 24px}
+.reccard .rank2{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--coke-2);margin-bottom:10px}
+.reccard h3{font-family:'Fraunces',serif;font-size:21px;font-weight:600}
+.reccard .why{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--accent);margin:4px 0 12px}
+.reccard p{font-size:13px;color:var(--ink-dim);line-height:1.55}
+.recstats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:16px}
+.rs{background:var(--panel-2);padding:13px 15px}
+.rs .k{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint)}
+.rs .v{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;margin-top:5px} .rs .v.coke{color:var(--coke-2)}
+.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+@media(max-width:820px){.timeline{grid-template-columns:1fr}}
+.tstep{background:var(--panel);padding:18px}
+.tno{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent)}
+.tw{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);margin:8px 0 6px}
+.th{font-size:13.5px;font-weight:600;margin-bottom:6px}
+.tp{font-size:12px;color:var(--ink-dim);line-height:1.45}
+.envelope{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.envelope{grid-template-columns:1fr}}
+.envcard{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:22px 24px}
+.envcard .el{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.envcard .ev{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;margin:11px 0 8px} .envcard .ev small{font-size:12px;color:var(--ink-faint)}
+.envcard .ecap{font-size:12px;color:var(--ink-dim);line-height:1.5}
+.valuelist{display:flex;flex-direction:column;gap:14px}
+.vitem{display:flex;gap:12px;align-items:flex-start}
+.vk{width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:7px;flex-shrink:0}
+.vt{font-size:13.5px;color:var(--ink-dim);line-height:1.5} .vt b{color:var(--ink)}
+
+/* ============ WIZARD ============ */
+.wizsteps{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
+.wizstep{display:flex;align-items:center;gap:10px;padding:11px 16px;border:1px solid var(--line-2);border-radius:8px;background:var(--panel);flex:1;min-width:150px;opacity:.55;transition:all .15s}
+.wizstep.on{opacity:1;border-color:var(--accent);background:linear-gradient(120deg,rgba(232,255,79,.06),transparent)}
+.wizstep.done{opacity:1;border-color:var(--line-2)}
+.wizstep .wn{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;width:24px;height:24px;border-radius:50%;background:var(--panel-3);color:var(--ink-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wizstep.on .wn{background:var(--accent);color:var(--accent-ink)}
+.wizstep.done .wn{background:var(--live);color:var(--accent-ink)}
+.wizstep .wl{font-size:13px;font-weight:600}
+.wizstep .wl small{display:block;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-faint);font-weight:400;margin-top:2px}
+.wizpane{margin-top:26px}
+.wizgrid{display:grid;grid-template-columns:1fr 320px;gap:20px}
+@media(max-width:900px){.wizgrid{grid-template-columns:1fr}}
+.selrow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.selfield{flex:1;min-width:180px}
+.selfield label{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:7px}
+.fsel{width:100%;font-family:'Inter',sans-serif;font-size:13.5px;padding:10px 13px;background:var(--panel-2);color:var(--ink);border:1px solid var(--line-2);border-radius:7px;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' stroke='%239aa3ab' stroke-width='1.4' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 13px center;padding-right:32px}
+.wizcanvas{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative}
+.wizcanvas svg{display:block;width:100%;height:auto;cursor:crosshair}
+.canvhint{position:absolute;top:12px;left:14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);background:rgba(12,14,16,.7);padding:5px 10px;border-radius:5px;pointer-events:none}
+.wizside{display:flex;flex-direction:column;gap:16px}
+.wizreadout{background:linear-gradient(135deg,var(--panel-2),var(--panel));border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:20px}
+.rd{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--line)}
+.rd:last-child{border-bottom:none}
+.rd .rdk{font-size:12.5px;color:var(--ink-dim)}
+.rd .rdv{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:700}
+.rd .rdv.coke{color:var(--coke-2)} .rd .rdv.acc{color:var(--accent)}
+.rd .rdv small{font-size:11px;color:var(--ink-faint);font-weight:400}
+.checkgroup{margin-bottom:18px}
+.checkgrouphead{display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+.checkgrouphead b{color:var(--accent)}
+.checkitems{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:640px){.checkitems{grid-template-columns:1fr}}
+.checkitem{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--panel-2);border:1px solid var(--line-2);border-radius:7px;cursor:pointer;transition:all .13s}
+.checkitem:hover{border-color:var(--ink-faint)}
+.checkitem.on{border-color:var(--coke);background:linear-gradient(120deg,rgba(245,0,29,.07),transparent)}
+.checkbox{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--line-2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .13s}
+.checkitem.on .checkbox{background:var(--coke);border-color:var(--coke)}
+.checkitem.on .checkbox::after{content:"✓";color:#fff;font-size:11px;font-weight:700}
+.ci-name{font-size:12.5px;flex:1} .ci-name small{display:block;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-faint);margin-top:1px}
+.wiztotal{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--line-2);border-radius:8px;padding:16px 20px;margin-top:6px}
+.wiztotal .wtl{font-size:13px;color:var(--ink-dim)}
+.wiztotal .wtv{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--coke-2)}
+.selectall{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0}
+.sumcard{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:24px}
+.sumrow{display:flex;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.sumrow:last-of-type{border-bottom:none}
+.sumrow .sk{color:var(--ink-faint)} .sumrow .sv{color:var(--ink);font-weight:500;text-align:right;max-width:60%}
+.sumrow .sv b{color:var(--coke-2)}
+.wizsent{text-align:center;padding:50px 30px;background:var(--panel);border:1px solid var(--line-2);border-radius:10px}
+.wizsent .tick{width:60px;height:60px;border-radius:50%;background:rgba(70,224,143,.14);border:1px solid rgba(70,224,143,.4);color:var(--live);font-size:28px;display:flex;align-items:center;justify-content:center;margin:0 auto 22px}
+.wizsent h3{font-family:'Fraunces',serif;font-size:26px;font-weight:600;margin-bottom:12px}
+.wizsent p{font-size:14px;color:var(--ink-dim);max-width:48ch;margin:0 auto;line-height:1.6}
+.wizsent .ref{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);margin-top:20px;letter-spacing:.05em}
+.btnrow{display:flex;justify-content:space-between;gap:12px;margin-top:26px;flex-wrap:wrap}
+.btn{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;padding:12px 22px;border-radius:7px;border:none;cursor:pointer;transition:all .14s}
+.btn.primary{background:var(--accent);color:var(--accent-ink)} .btn.primary:hover{background:var(--accent-deep)}
+.btn.primary:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:var(--panel-2);color:var(--ink);border:1px solid var(--line-2)}
+
+/* locked (roadmap analytical tabs) */
+.locked{text-align:center;padding:48px 24px;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.locked .lk{font-size:30px;color:var(--ink-faint);margin-bottom:14px}
+.locked h3{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:10px}
+.locked p{font-size:13.5px;color:var(--ink-dim);max-width:52ch;margin:0 auto 22px;line-height:1.55}
+
+/* footer */
+.foot{border-top:1px solid var(--line);padding:26px 30px;max-width:1300px;margin:0 auto;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.foot .fb{font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.14em;font-size:13px} .foot .fb span{color:var(--accent)}
+.foot .fm{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--ink-faint);text-align:right;line-height:1.6}
+
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<!-- ============ HEADER ============ -->
+<header class="app"><div class="app-in">
+  <div class="brand">DIG-<span>IN</span></div>
+  <div class="appctx" id="appctx"></div>
+  <div class="spacer"></div>
+  <div class="msel" id="msel">
+    <button class="msel-btn" id="mselBtn" aria-haspopup="listbox" aria-expanded="false">
+      <span class="mflag" id="mselFlag">🇵🇹</span>
+      <span>
+        <span class="mnm" id="mselName">Portugal</span>
+        <span class="mst live" id="mselStatus"><span class="stdot live"></span>Live</span>
+      </span>
+      <span class="chev">▾</span>
+    </button>
+    <div class="msel-panel" id="mpanel" role="listbox"></div>
+  </div>
+  <div class="lang" id="lang">
+    <button data-l="en" class="on">EN</button>
+    <button data-l="pt">PT</button>
+  </div>
+</div></header>
+
+<!-- ============ TABS ============ -->
+<nav class="tabsbar"><div class="tabs" id="tabs">
+  <button class="tab on" data-tab="overview"><span class="tnum">01</span><span class="tlabel" data-k="tab_overview"></span></button>
+  <button class="tab" data-tab="menu"><span class="tnum">02</span><span class="tlabel" data-k="tab_menu"></span></button>
+  <button class="tab" data-tab="adjacency"><span class="tnum">03</span><span class="tlabel" data-k="tab_adjacency"></span></button>
+  <button class="tab" data-tab="execution"><span class="tnum">04</span><span class="tlabel" data-k="tab_execution"></span></button>
+  <button class="tab" data-tab="price"><span class="tnum">05</span><span class="tlabel" data-k="tab_price"></span></button>
+  <button class="tab" data-tab="datapoints"><span class="tnum">06</span><span class="tlabel" data-k="tab_datapoints"></span></button>
+  <button class="tab" data-tab="coverage"><span class="tnum">07</span><span class="tlabel" data-k="tab_coverage"></span></button>
+  <button class="tab" data-tab="pilot"><span class="tnum">08</span><span class="tlabel" data-k="tab_pilot"></span></button>
+</div></nav>
+
+<!-- ============ VIEWS ============ -->
+<main>
+  <section class="view on" id="tab-overview"><div class="section"><div id="ovWrap"></div></div></section>
+  <section class="view" id="tab-menu"><div class="section"><div id="menuWrap"></div></div></section>
+  <section class="view" id="tab-adjacency"><div class="section"><div id="adjWrap"></div></div></section>
+  <section class="view" id="tab-execution"><div class="section"><div id="execWrap"></div></div></section>
+  <section class="view" id="tab-price"><div class="section"><div id="priceWrap"></div></div></section>
+  <section class="view" id="tab-datapoints"><div class="section"><div id="dpWrap"></div></div></section>
+  <section class="view" id="tab-coverage"><div class="section"><div id="covWrap"></div></div></section>
+  <section class="view" id="tab-pilot"><div class="section"><div id="pilotWrap"></div></div></section>
+</main>
+
+<footer class="foot">
+  <div class="fb">DIG-<span>IN</span></div>
+  <div class="fm" id="footMeta"></div>
+</footer>
+<script>
+/* ===== DIG-IN · Coca-Cola on-trade read =====
+   Real coverage & venue universe from the DIG-IN European HoReCa sizing.
+   Portugal = live. Spain + Germany already in our data. GB read in Soho.
+   Rest of CCEP Europe = roadmap. Share/execution/price figures are
+   illustrative; venue counts, splits and confidence are from the model.
+   Narrative carried in EN + PT. Replace figures with production reads
+   before this is shown outside CCEP. ===== */
+
+const CCEP_OWNED=["Coca-Cola","Coca-Cola Zero","Fanta","Sprite","Fuze Tea","Nestea","Aquarius","Powerade","Monster","Burn","Appletiser","Royal Bliss","Nordic Mist","Mezzo Mix"];
+const RED=["#f5001d","#ff5563","#b30d18","#ff8a94","#7d0912","#d10c1a"];
+const COOL=["#4fd6ff","#b18cff","#e8ff4f","#37d6b8","#6b7480","#5a8dee","#e879b8"];
+function isCCEP(n,m){ if(n.indexOf("Coca-Cola")===0)return true; if(CCEP_OWNED.indexOf(n)>-1)return true; if(m&&m.ownExtra&&m.ownExtra.indexOf(n)>-1)return true; return false; }
+
+const SCALE={ venues:"500K+", countries:"4", ptMapped:"82K+", active:"870K" };
+const COMPETITORS=[
+  {name:"DIG-IN", base:"Lisbon", cov:{en:"500K+ venues · 4 countries",pt:"500K+ espaços · 4 países"}, core:{en:"Portugal 82K+ · PT·ES·DE active",pt:"Portugal 82K+ · PT·ES·DE ativos"}, note:{en:"Proprietary data, profitable",pt:"Dados proprietários, rentável"}, us:true},
+  {name:"Delectatech", base:"Barcelona", cov:{en:"3M venues · 5 countries",pt:"3M espaços · 5 países"}, core:{en:"Spain (250K)",pt:"Espanha (250K)"}, note:{en:"Closest direct competitor",pt:"Concorrente direto mais próximo"}, us:false},
+  {name:"Datassential", base:"Chicago", cov:{en:"9M+ operators · 60 countries",pt:"9M+ operadores · 60 países"}, core:{en:"USA (2.1M)",pt:"EUA (2,1M)"}, note:{en:"Global leader, US-anchored",pt:"Líder global, ancorado nos EUA"}, us:false},
+  {name:"CGA by NIQ", base:"UK", cov:{en:"On-trade UK / US / EU",pt:"On-trade RU / EUA / UE"}, core:{en:"United Kingdom",pt:"Reino Unido"}, note:{en:"Alcohol-focused",pt:"Focado em álcool"}, us:false}
+];
+
+const DP_LAYERS=[
+  {k:"menu", n:45, ml:true},{k:"exec", n:33},{k:"adj", n:26},{k:"price", n:92},{k:"found", n:57}
+];
+const DATAPOINTS={ total:253, cats:[
+  {n:15, k:"menu", ml:true, name:{en:"Menu — drinks",pt:"Carta — bebidas"}, d:{en:"Every soft-drink, beer, wine and cocktail brand listed on the menu.",pt:"Todas as marcas de refrigerante, cerveja, vinho e cocktail na carta."}},
+  {n:16, k:"menu", ml:true, name:{en:"Brands in the room",pt:"Marcas no espaço"}, d:{en:"Which drink brands are actually visible — fridges, bottles, taps.",pt:"Que marcas estão mesmo visíveis — frigoríficos, garrafas, torneiras."}},
+  {n:14, k:"menu", ml:true, name:{en:"Menu structure",pt:"Estrutura da carta"}, d:{en:"Menu size, categories and price spread, item by item.",pt:"Dimensão da carta, categorias e amplitude de preços, item a item."}},
+  {n:14, k:"exec", name:{en:"Equipment & serve",pt:"Equipamento & serviço"}, d:{en:"Taps, coffee machines, glassware and branded furniture, by brand.",pt:"Torneiras, máquinas de café, copos e mobiliário de marca, por marca."}},
+  {n:19, k:"exec", name:{en:"The room",pt:"O espaço"}, d:{en:"Space type, seating, terrace and how the venue presents itself.",pt:"Tipo de espaço, lugares, esplanada e como o espaço se apresenta."}},
+  {n:12, k:"adj", name:{en:"Venue identity",pt:"Identidade do espaço"}, d:{en:"Type, cuisine mix, chain or independent, and how long it's been open.",pt:"Tipo, mistura de cozinhas, cadeia ou independente, e há quanto abriu."}},
+  {n:14, k:"adj", name:{en:"Menu & ingredients",pt:"Carta & ingredientes"}, d:{en:"Proteins, dietary options and premium ingredients that place the venue.",pt:"Proteínas, opções alimentares e ingredientes que posicionam o espaço."}},
+  {n:16, k:"price", name:{en:"Delivery",pt:"Entregas"}, d:{en:"Presence, ratings and average price across the main delivery apps.",pt:"Presença, avaliações e preço médio nas principais apps de entrega."}},
+  {n:19, k:"price", name:{en:"Reviews & sentiment",pt:"Avaliações & sentimento"}, d:{en:"Ratings and what customers praise or complain about, across platforms.",pt:"Avaliações e o que os clientes elogiam ou criticam, em várias plataformas."}},
+  {n:9, k:"price", name:{en:"Reservations",pt:"Reservas"}, d:{en:"Presence and ratings on the main booking platforms.",pt:"Presença e avaliações nas principais plataformas de reserva."}},
+  {n:8, k:"price", name:{en:"Footfall",pt:"Afluência"}, d:{en:"Estimated daily traffic, lunch vs dinner, and local vs tourist mix.",pt:"Tráfego diário estimado, almoço vs jantar, e mistura local vs turista."}},
+  {n:5, k:"price", name:{en:"Zone & competition",pt:"Zona & concorrência"}, d:{en:"Direct competitors within 500 m, price position and local ranking.",pt:"Concorrentes diretos a 500 m, posição de preço e ranking local."}},
+  {n:12, k:"price", name:{en:"Demand signals",pt:"Sinais de procura"}, d:{en:"Revenue and volume proxies, popularity trend and hiring activity.",pt:"Aproximações de receita e volume, tendência de popularidade e contratações."}},
+  {n:11, k:"price", name:{en:"Instagram",pt:"Instagram"}, d:{en:"Following, engagement and how often the venue posts.",pt:"Seguidores, envolvimento e frequência de publicação."}},
+  {n:6, k:"price", name:{en:"Facebook",pt:"Facebook"}, d:{en:"Following, rating, check-ins and recent activity.",pt:"Seguidores, avaliação, check-ins e atividade recente."}},
+  {n:6, k:"price", name:{en:"TikTok & more",pt:"TikTok & mais"}, d:{en:"TikTok, LinkedIn, YouTube and mentions in guides and media.",pt:"TikTok, LinkedIn, YouTube e menções em guias e imprensa."}},
+  {n:15, k:"found", name:{en:"Location",pt:"Localização"}, d:{en:"Full address, parish, district and precise coordinates.",pt:"Morada completa, freguesia, distrito e coordenadas precisas."}},
+  {n:16, k:"found", name:{en:"Business profile",pt:"Perfil do negócio"}, d:{en:"Rating, opening hours, price level and popular times.",pt:"Avaliação, horário, nível de preço e horas de pico."}},
+  {n:11, k:"found", name:{en:"Web presence",pt:"Presença web"}, d:{en:"Website, online menu, booking and delivery, contacts.",pt:"Website, carta online, reservas e entregas, contactos."}},
+  {n:10, k:"found", name:{en:"One identity per venue",pt:"Identidade única por espaço"}, d:{en:"A single clean record across every source, with no duplicates.",pt:"Um registo único e limpo em todas as fontes, sem duplicados."}},
+  {n:5, k:"found", name:{en:"Data quality",pt:"Qualidade dos dados"}, d:{en:"Freshness, number of sources and human validation per venue.",pt:"Atualidade, número de fontes e validação humana por espaço."}}
+]};
+
+const MARKETS={
+  PT:{ code:"PT", name:"Portugal", flag:"🇵🇹", status:"live", region:"Europe",
+    poi:90000, restaurants:42000, bars:48000, per1000:8.74, confidence:"Alta", inDB:true, mapped:82000,
+    deepVenues:3200, since:"2025", recommended:false, cats:["Soft drinks","Energy","Mixers"],
+    kpi:{ ccFlag:42, ccep:61, brands:90, catsLive:3, qoq:1.3 },
+    cities:["Lisboa · Cais do Sodré","Porto · Baixa","Cascais","Coimbra","Braga","Algarve · Lagos"],
+    zones:[
+      {name:"Lisboa", area:"Cais do Sodré", venues:612, ccShare:44, delta:2, rival:{name:"Sumol",share:14}, priceIdx:101, premium:22},
+      {name:"Porto", area:"Baixa & Galerias", venues:730, ccShare:41, delta:1, rival:{name:"Sumol",share:16}, priceIdx:96, premium:18},
+      {name:"Cascais", area:"Centro", venues:540, ccShare:47, delta:3, rival:{name:"Pepsi",share:10}, priceIdx:108, premium:27},
+      {name:"Coimbra", area:"Baixa", venues:470, ccShare:45, delta:0, rival:{name:"Sumol",share:15}, priceIdx:89, premium:13},
+      {name:"Braga", area:"Sé & Centro", venues:460, ccShare:43, delta:2, rival:{name:"Compal",share:14}, priceIdx:92, premium:15},
+      {name:"Algarve", area:"Lagos", venues:388, ccShare:46, delta:4, rival:{name:"Pepsi",share:11}, priceIdx:112, premium:30}
+    ],
+    som:{ "Soft drinks":[["Coca-Cola",42],["Fanta",8],["Sprite",6],["Fuze Tea",5],["Compal",15],["Sumol",12],["Pepsi",8],["Água das Pedras",4]],
+      "Energy":[["Red Bull",44],["Monster",31],["Burn",8],["Nocco",6],["Rockstar",5],["Guaraná",6]],
+      "Mixers":[["Schweppes",34],["Fever-Tree",22],["Royal Bliss",18],["Nordic Mist",10],["Fentimans",8],["Indi",8]] },
+    top:{ "Soft drinks":[["Coca-Cola",71,2],["Compal",52,1],["Sumol",47,1],["Água das Pedras",44,3],["Luso",41,1],["Fanta",38,-1],["Sprite",31,0],["Fuze Tea",29,4],["Aquarius",24,2],["Pepsi",22,-1],["Nestea",21,-2],["7up",15,-1]],
+      "Energy":[["Red Bull",48,3],["Monster",41,4],["Powerade",22,2],["Burn",17,2],["Prime",14,6],["Nocco",13,5],["Rockstar",11,1],["Guaraná",9,1]],
+      "Mixers":[["Schweppes",44,1],["Fever-Tree",31,5],["Royal Bliss",23,5],["Nordic Mist",18,2],["Appletiser",14,3],["Fentimans",12,3],["Indi",9,4],["Ledger's",7,2]] },
+    placement:{ leader:"Coca-Cola", challenger:"Pepsi", zones:[
+      {zone:{en:"Interior",pt:"Interior"}, materials:[["Menu",71,28],["Branded fridge",44,12],["Glassware",39,9],["Counter cooler",33,11],["Post-mix",27,6]]},
+      {zone:{en:"Terrace",pt:"Esplanada"}, materials:[["Table menus",34,13],["Parasols",31,7],["Table objects",22,6],["Furniture",14,4]]},
+      {zone:{en:"Storefront",pt:"Fachada"}, materials:[["Window",16,5],["Signage",19,5],["Illuminated sign",11,3]]}
+    ]},
+    execGap:{ menu:71, rows:[["Branded fridge · cold",44],["Glassware",39],["Table menus · terrace",34],["Counter cooler",33],["Storefront signage",19]],
+      note:{en:"Coca-Cola is on 71% of soft-drinks menus but owns the fridge in 44% and the storefront in just 19%. The biggest gap — signage — is also the cheapest to close. For a new market, that order is the trade plan.",pt:"A Coca-Cola está em 71% das cartas de refrigerantes mas domina o frigorífico em 44% e a fachada em apenas 19%. O maior fosso — sinalética — é também o mais barato de fechar. Para um mercado novo, essa ordem é o plano de trade."} },
+    adjacency:{ brand:"Coca-Cola",
+      cuisines:[[{en:"Burgers / fast casual",pt:"Hambúrgueres / fast casual"},162],[{en:"Pizza",pt:"Pizza"},147],[{en:"Petiscos / tascas",pt:"Petiscos / tascas"},118],[{en:"Traditional Portuguese",pt:"Portuguesa tradicional"},104],[{en:"Brunch / specialty coffee",pt:"Brunch / café de especialidade"},71],[{en:"Fine dining",pt:"Alta cozinha"},58]],
+      rivals:[["Sumol",44],["Compal",39],["Água das Pedras",31],["Pepsi",19]],
+      read:{en:"Coca-Cola over-indexes with <b>burgers and pizza</b> and under-indexes in <b>brunch and specialty coffee</b>, where premium waters and natural drinks lead — exactly where the premium range (Royal Bliss, Appletiser, Fuze Tea) is built to win. Sumol is the local drink most often on the same menu.",pt:"A Coca-Cola sobre-indexa em <b>hambúrgueres e pizza</b> e sub-indexa em <b>brunch e cafés de especialidade</b>, onde lideram águas premium e bebidas naturais — precisamente onde a gama premium (Royal Bliss, Appletiser, Fuze Tea) foi feita para ganhar. O Sumol é a bebida local mais vezes na mesma carta."} },
+    price:{ "Soft drinks":{idx:100,premium:22,mainstream:60,value:18},"Energy":{idx:126,premium:38,mainstream:49,value:13},"Mixers":{idx:141,premium:52,mainstream:36,value:12} },
+    insights:{ score:"6/6", label:{en:"zones led · soft drinks",pt:"zonas lideradas · refrigerantes"},
+      verdict:{en:"<b>The portfolio owns soft drinks in every Portuguese zone</b> — 61% of the menu against a fragmented local field. The open fronts are <b>energy</b>, where Red Bull still leads, and <b>execution</b>, which trails menu presence by about 30 points. That gap is the plan.",pt:"<b>O portefólio domina os refrigerantes em todas as zonas portuguesas</b> — 61% da carta contra um campo local fragmentado. As frentes abertas são a <b>energia</b>, onde o Red Bull ainda lidera, e a <b>execução</b>, que fica cerca de 30 pontos atrás da presença na carta. Esse fosso é o plano."},
+      strong:[{en:"<b>Cascais & Algarve</b> — premium coastal zones; Coca-Cola clears 46%, the portfolio tops 64%.",pt:"<b>Cascais & Algarve</b> — zonas costeiras premium; a Coca-Cola passa os 46%, o portefólio chega a 64%."},{en:"<b>Lisboa & Porto</b> — dense urban on-trade, portfolio above 60% with the fridge and glassware ahead.",pt:"<b>Lisboa & Porto</b> — on-trade urbano denso, portefólio acima de 60% com frigorífico e copa à frente."},{en:"<b>Fuze Tea +4 pts</b> — the fastest-growing line, moving into brunch and specialty venues.",pt:"<b>Fuze Tea +4 pts</b> — a linha que mais cresce, a entrar em brunch e espaços de especialidade."}],
+      exposed:[{en:"<b>Energy</b> — Red Bull leads at 44%; Monster and Burn hold 39% but lose the impulse fridge.",pt:"<b>Energia</b> — o Red Bull lidera com 44%; Monster e Burn somam 39% mas perdem o frigorífico de impulso."},{en:"<b>Coimbra</b> — student value pressure; Sumol closes to 15% and price sits below national.",pt:"<b>Coimbra</b> — pressão de valor estudantil; o Sumol aproxima-se dos 15% e o preço fica abaixo do nacional."},{en:"<b>Brunch & specialty coffee</b> — natural drinks and premium waters lead; Coca-Cola under-indexes.",pt:"<b>Brunch & café de especialidade</b> — lideram bebidas naturais e águas premium; a Coca-Cola sub-indexa."}],
+      whitespace:[
+        {cls:"grow", t:{en:"Premium mixers",pt:"Mixers premium"}, note:{en:"Royal Bliss and Nordic Mist hold 28% against Schweppes and Fever-Tree. Cocktail bars and fine dining are open — a 141 price index rewards premium.",pt:"Royal Bliss e Nordic Mist somam 28% contra Schweppes e Fever-Tree. Bares de cocktail e alta cozinha estão abertos — um índice de 141 premeia o premium."}},
+        {cls:"grow", t:{en:"Brunch venues",pt:"Espaços de brunch"}, note:{en:"Appletiser, Fuze Tea and Aquarius fit a segment Coca-Cola under-indexes in — the fastest space to convert with today's range.",pt:"Appletiser, Fuze Tea e Aquarius encaixam num segmento onde a Coca-Cola sub-indexa — o espaço mais rápido a converter com a gama atual."}},
+        {cls:"def", t:{en:"Terrace & storefront",pt:"Esplanada & fachada"}, note:{en:"Menu presence 71% but storefront only 19%. Rivals buy visibility cheaply here — the cheapest execution to lock first.",pt:"Presença na carta 71% mas fachada só 19%. Os rivais compram visibilidade barata aqui — a execução mais barata a fechar primeiro."}},
+        {cls:"grow", t:{en:"Energy · student zones",pt:"Energia · zonas estudantis"}, note:{en:"Coimbra and Braga skew young; Monster and Prime are under-listed against Red Bull — the highest-headroom space for energy.",pt:"Coimbra e Braga são jovens; Monster e Prime estão sub-representados face ao Red Bull — o maior espaço para a energia."}}
+      ] }
+  },
+
+  ES:{ code:"ES", name:"Spain", flag:"🇪🇸", status:"active", region:"Europe",
+    poi:420000, restaurants:105000, bars:245000, per1000:8.86, confidence:"Alta", inDB:true, mapped:null,
+    deepVenues:1420, recommended:true, recRank:"01", ownExtra:[], cats:["Soft drinks"],
+    kpi:{ ccFlag:47, ccep:64, brands:74, catsLive:1, qoq:0.9 },
+    cities:["Madrid · Malasaña","Barcelona · El Born","Valencia","Sevilla","Bilbao"],
+    pitch:{en:"Already in our data — one of three active markets. A 420K-venue field, the Iberian profile closest to Portugal, Madrid and Barcelona already read. Not a build; a switch-on.",pt:"Já nos nossos dados — um de três mercados ativos. Um universo de 420 mil espaços, o perfil ibérico mais próximo de Portugal, Madrid e Barcelona já lidos. Não é construir; é ligar."},
+    zones:[
+      {name:"Madrid", area:"Malasaña", venues:740, ccShare:47, delta:2, rival:{name:"Kas",share:10}, priceIdx:99, premium:21},
+      {name:"Barcelona", area:"El Born", venues:680, ccShare:45, delta:1, rival:{name:"Cacaolat",share:9}, priceIdx:101, premium:23}
+    ],
+    som:{ "Soft drinks":[["Coca-Cola",47],["Fanta",8],["Sprite",5],["Aquarius",4],["Pepsi",13],["Kas",10],["Font Vella",5],["La Casera",8]] },
+    top:{ "Soft drinks":[["Coca-Cola",73,2],["Aquarius",49,3],["Font Vella",34,1],["Fanta",36,-1],["Sprite",28,0],["Vichy Catalán",27,1],["Kas",26,1],["Pepsi",24,-2],["Nestea",22,2],["Royal Bliss",18,4]] },
+    placement:{ leader:"Coca-Cola", challenger:"Kas", zones:[
+      {zone:{en:"Interior",pt:"Interior"}, materials:[["Menu",73,26],["Branded fridge",41,14],["Glassware",31,11],["Bar display",28,9]]},
+      {zone:{en:"Terrace",pt:"Esplanada"}, materials:[["Parasols",36,10],["Table menus",33,12],["Table objects",21,7]]},
+      {zone:{en:"Storefront",pt:"Fachada"}, materials:[["Signage",18,5],["Window",15,4]]}
+    ]},
+    execGap:{ menu:73, rows:[["Branded fridge",41],["Glassware",31],["Table menus · terrace",33],["Bar display",28],["Storefront signage",18]],
+      note:{en:"The Portugal pattern repeats: on 73% of menus, but fridges 41% and storefront 18%. Because the data already exists, this read is ready now.",pt:"Repete-se o padrão de Portugal: em 73% das cartas, mas frigorífico 41% e fachada 18%. Como os dados já existem, esta leitura está pronta agora."} },
+    adjacency:{ brand:"Coca-Cola",
+      cuisines:[[{en:"Fast casual / burgers",pt:"Fast casual / hambúrgueres"},151],[{en:"Tapas / tabernas",pt:"Tapas / tabernas"},138],[{en:"Latin American",pt:"Latino-americana"},112],[{en:"International",pt:"Internacional"},84],[{en:"Brunch / specialty",pt:"Brunch / especialidade"},69],[{en:"Fine dining",pt:"Alta cozinha"},61]],
+      rivals:[["Kas",34],["Vichy Catalán",27],["Pepsi",19]],
+      read:{en:"Coca-Cola over-indexes with <b>tapas and fast-casual</b>; Kas is the local drink to displace. <b>Brunch and fine dining</b> are the open space the premium range targets — the same profile open in Portugal.",pt:"A Coca-Cola sobre-indexa em <b>tapas e fast-casual</b>; o Kas é a bebida local a deslocar. <b>Brunch e alta cozinha</b> são o espaço aberto que a gama premium ataca — o mesmo perfil aberto em Portugal."} },
+    price:{ "Soft drinks":{idx:100,premium:22,mainstream:59,value:19} }
+  },
+
+  DE:{ code:"DE", name:"Germany", flag:"🇩🇪", status:"active", region:"Europe",
+    poi:360000, restaurants:140370, bars:180000, per1000:4.27, confidence:"Alta", inDB:true, mapped:null,
+    deepVenues:1510, recommended:true, recRank:"02", ownExtra:[], cats:["Soft drinks"],
+    kpi:{ ccFlag:26, ccep:39, brands:88, catsLive:1, qoq:-1.8 },
+    cities:["Berlin · Kreuzberg","Berlin · Prenzlauer Berg","Hamburg","München","Köln"],
+    pitch:{en:"The largest on-trade in CCEP Europe (360K) — and already in our data. It's also the warning sign: in Kreuzberg, Coca-Cola is the challenger, with Club Mate and Fritz-Kola ahead on the menu.",pt:"O maior on-trade da CCEP na Europa (360 mil) — e já nos nossos dados. É também o sinal de alerta: em Kreuzberg, a Coca-Cola é a desafiante, com Club Mate e Fritz-Kola à frente na carta."},
+    zones:[
+      {name:"Berlin", area:"Kreuzberg", venues:820, ccShare:26, delta:-3, rival:{name:"Club Mate",share:31}, priceIdx:112, premium:31},
+      {name:"Berlin", area:"Prenzlauer Berg", venues:690, ccShare:29, delta:-1, rival:{name:"Fritz-Kola",share:26}, priceIdx:118, premium:38}
+    ],
+    som:{ "Soft drinks":[["Coca-Cola",26],["Fanta",6],["Sprite",4],["Mezzo Mix",3],["Club Mate",29],["Fritz-Kola",24],["Premium Cola",4],["Pepsi",4]] },
+    top:{ "Soft drinks":[["Club Mate",61,4],["Coca-Cola",59,-3],["Fritz-Kola",54,9],["Bionade",38,3],["Gerolsteiner",36,1],["Mio Mio Mate",34,6],["Fanta",28,-2],["Premium Cola",27,5],["Sprite",24,-1],["Mezzo Mix",22,-1]] },
+    placement:{ leader:"Coca-Cola", challenger:"Fritz-Kola", zones:[
+      {zone:{en:"Interior",pt:"Interior"}, materials:[["Menu",54,61],["Branded fridge",47,34],["Counter visibility",42,39],["Glassware",22,26],["Post-mix",19,8]]},
+      {zone:{en:"Terrace",pt:"Esplanada"}, materials:[["Table menus",24,27],["Parasols",18,12]]},
+      {zone:{en:"Storefront",pt:"Fachada"}, materials:[["Signage",12,16],["Window",10,13]]}
+    ]},
+    execGap:{ menu:54, rows:[["Branded fridge",47],["Counter visibility",42],["Table menus · terrace",24],["Glassware",22],["Storefront signage",12]],
+      note:{en:"The warning market. Coca-Cola is on 54% of Kreuzberg menus — behind Fritz-Kola. Where it holds is the fridge (47%) and corner-shop distribution. The move here is to defend the menu before the Mate brands own the culture.",pt:"O mercado de alerta. A Coca-Cola está em 54% das cartas de Kreuzberg — atrás da Fritz-Kola. Onde aguenta é no frigorífico (47%) e na distribuição de quiosque. Aqui, a jogada é defender a carta antes que as marcas de Mate dominem a cultura."} },
+    adjacency:{ brand:"Coca-Cola",
+      cuisines:[[{en:"Fast casual / Imbiss",pt:"Fast casual / Imbiss"},141],[{en:"Turkish / Döner",pt:"Turca / Döner"},128],[{en:"International",pt:"Internacional"},108],[{en:"Modern German",pt:"Alemã moderna"},96],[{en:"Brunch / specialty",pt:"Brunch / especialidade"},67],[{en:"Vegan / plant-based",pt:"Vegan / plant-based"},54]],
+      rivals:[["Club Mate",58],["Fritz-Kola",41],["Premium Cola",21]],
+      read:{en:"The warning read. In Kreuzberg, <b>Club Mate shares 58%</b> of Coca-Cola menus and Fritz-Kola 41% — challengers that own the young and vegan venues where Coca-Cola under-indexes hardest. This is the signal to watch quarterly, already in our data.",pt:"A leitura de alerta. Em Kreuzberg, <b>o Club Mate partilha 58%</b> das cartas da Coca-Cola e a Fritz-Kola 41% — desafiantes que dominam os espaços jovens e vegan onde a Coca-Cola mais sub-indexa. É o sinal a acompanhar todos os trimestres, já nos nossos dados."} },
+    price:{ "Soft drinks":{idx:114,premium:35,mainstream:48,value:17} }
+  },
+
+  GB:{ code:"GB", name:"Great Britain", flag:"🇬🇧", status:"active", region:"Europe",
+    poi:380000, restaurants:160000, bars:190000, per1000:5.61, confidence:"Média", inDB:false, pilotScan:true, mapped:null,
+    deepVenues:640, recommended:false, ownExtra:["Schweppes"], cats:["Soft drinks"],
+    kpi:{ ccFlag:39, ccep:58, brands:71, catsLive:1, qoq:0.7 },
+    cities:["London · Soho","Manchester","Edinburgh","Birmingham","Bristol"],
+    pitch:{en:"Read in Soho for the case study — a preview, not full coverage. The premium battleground: Fever-Tree against Coca-Cola and Schweppes (a CCEP brand here). Full activation opens 380K venues.",pt:"Lido no Soho para o caso de estudo — uma amostra, não cobertura total. O terreno premium: Fever-Tree contra Coca-Cola e Schweppes (aqui uma marca CCEP). A ativação total abre 380 mil espaços."},
+    zones:[
+      {name:"London", area:"Soho", venues:640, ccShare:39, delta:1, rival:{name:"Fever-Tree",share:14}, priceIdx:138, premium:47}
+    ],
+    som:{ "Soft drinks":[["Coca-Cola",39],["Fanta",5],["Sprite",4],["Schweppes",10],["Fever-Tree",15],["San Pellegrino",9],["Pepsi Max",10],["Fentimans",8]] },
+    top:{ "Soft drinks":[["Coca-Cola",64,1],["Fever-Tree",51,6],["Schweppes",44,2],["San Pellegrino",38,3],["Pepsi Max",29,-1],["Franklin & Sons",27,4],["London Essence",24,5],["Sprite",22,0],["Appletiser",18,2],["Fuze Tea",16,4]] },
+    placement:{ leader:"Coca-Cola", challenger:"Fever-Tree", zones:[
+      {zone:{en:"Interior",pt:"Interior"}, materials:[["Menu",68,54],["Back bar display",33,41],["Branded fridge",41,19],["Glassware",29,34]]},
+      {zone:{en:"Terrace",pt:"Esplanada"}, materials:[["Table menus",31,22],["Parasols",16,6]]},
+      {zone:{en:"Storefront",pt:"Fachada"}, materials:[["Signage",14,7],["Window",13,9]]}
+    ]},
+    execGap:{ menu:68, rows:[["Branded fridge",41],["Back bar display",33],["Glassware",29],["Table menus · terrace",31],["Storefront signage",14]],
+      note:{en:"A different fight: Fever-Tree wins the back bar and glassware in premium venues; Coca-Cola holds the fridge and the core menu. Ownership is mapped per market — Schweppes counts for CCEP here.",pt:"Uma luta diferente: a Fever-Tree ganha o back bar e a copa em espaços premium; a Coca-Cola aguenta o frigorífico e a carta base. A posse é mapeada por mercado — aqui a Schweppes conta para a CCEP."} },
+    adjacency:{ brand:"Coca-Cola",
+      cuisines:[[{en:"Fast casual",pt:"Fast casual"},144],[{en:"Pubs / gastropub",pt:"Pubs / gastropub"},129],[{en:"Cocktail bars",pt:"Bares de cocktail"},118],[{en:"Modern British",pt:"Britânica moderna"},96],[{en:"Brunch / specialty",pt:"Brunch / especialidade"},73],[{en:"Fine dining",pt:"Alta cozinha"},64]],
+      rivals:[["Fever-Tree",41],["Schweppes",33],["San Pellegrino",26]],
+      read:{en:"In Great Britain <b>Schweppes is a CCEP brand</b> — ownership shifts by market. The battleground is <b>premium mixers</b>: Fever-Tree shares 41% of Coca-Cola menus. Cocktail bars and fine dining are where the mixer range must win the back bar.",pt:"Na Grã-Bretanha <b>a Schweppes é uma marca CCEP</b> — a posse muda por mercado. O terreno são os <b>mixers premium</b>: a Fever-Tree partilha 41% das cartas da Coca-Cola. Bares de cocktail e alta cozinha são onde a gama de mixers tem de ganhar o back bar."} },
+    price:{ "Soft drinks":{idx:138,premium:47,mainstream:39,value:14} }
+  },
+
+  FR:{code:"FR",name:"France",flag:"🇫🇷",status:"road",region:"Europe",poi:600000,restaurants:177680,bars:350000,per1000:8.82,confidence:"Alta",cities:["Paris · Le Marais","Lyon","Marseille","Bordeaux","Lille"],why:{en:"Second-largest on-trade in CCEP Europe — 600K venues. Premium café culture and a live shift to natural drinks.",pt:"Segundo maior on-trade da CCEP na Europa — 600 mil espaços. Cultura de café premium e uma viragem para bebidas naturais."}},
+  NL:{code:"NL",name:"Netherlands",flag:"🇳🇱",status:"road",region:"Europe",poi:100000,restaurants:50000,bars:40000,per1000:5.62,confidence:"Média",cities:["Amsterdam","Rotterdam","Utrecht","Den Haag"],why:{en:"100K dense urban on-trade; premium and no/low lead — a strong fit for the portfolio.",pt:"100 mil de on-trade urbano denso; premium e no/low lideram — encaixe forte para o portefólio."}},
+  BE:{code:"BE",name:"Belgium",flag:"🇧🇪",status:"road",region:"Europe",poi:90000,restaurants:40000,bars:42000,per1000:7.69,confidence:"Média",cities:["Brussels","Antwerp","Ghent","Bruges"],why:{en:"90K venues, strong café and brasserie culture. A compact, fast first market.",pt:"90 mil espaços, forte cultura de café e brasserie. Um mercado inicial compacto e rápido."}},
+  LU:{code:"LU",name:"Luxembourg",flag:"🇱🇺",status:"road",region:"Europe",poi:3800,restaurants:2200,bars:1300,per1000:5.76,confidence:"Média",cities:["Luxembourg City","Esch-sur-Alzette"],why:{en:"Small (3.8K) but the highest income — efficient inside a Benelux cluster.",pt:"Pequeno (3,8 mil) mas o maior rendimento — eficiente num cluster Benelux."}},
+  SE:{code:"SE",name:"Sweden",flag:"🇸🇪",status:"road",region:"Europe",poi:55000,restaurants:32000,bars:15000,per1000:5.24,confidence:"Média",cities:["Stockholm","Göteborg","Malmö"],why:{en:"55K venues, café and no/low culture — a signal market for premium and functional lines.",pt:"55 mil espaços, cultura de café e no/low — mercado-sinal para gamas premium e funcionais."}},
+  NO:{code:"NO",name:"Norway",flag:"🇳🇴",status:"road",region:"Europe",poi:16000,restaurants:10000,bars:4000,per1000:2.91,confidence:"Média",cities:["Oslo","Bergen","Trondheim"],why:{en:"16K venues; tight alcohol retail makes on-trade the channel to watch.",pt:"16 mil espaços; o retalho de álcool restrito faz do on-trade o canal a acompanhar."}},
+  IS:{code:"IS",name:"Iceland",flag:"🇮🇸",status:"road",region:"Europe",poi:1900,restaurants:1200,bars:500,per1000:5.0,confidence:"Baixa",cities:["Reykjavík","Akureyri"],why:{en:"1.9K venues — small enough for full coverage; a clean test market.",pt:"1,9 mil espaços — pequeno o suficiente para cobertura total; um mercado de teste limpo."}},
+  AD:{code:"AD",name:"Andorra",flag:"🇦🇩",status:"road",region:"Europe",poi:850,restaurants:450,bars:350,per1000:10.63,confidence:"Baixa",cities:["Andorra la Vella","Escaldes"],why:{en:"850 venues, ski and shopping tourism. Low cost to add to an Iberian cluster.",pt:"850 espaços, turismo de ski e compras. Baixo custo para juntar a um cluster ibérico."}},
+  MC:{code:"MC",name:"Monaco",flag:"🇲🇨",status:"road",region:"Europe",poi:600,restaurants:350,bars:200,per1000:15.38,confidence:"Baixa",cities:["Monte-Carlo","La Condamine"],why:{en:"600 venues, the world's highest income per head — ultra-premium, outsized mixer signal.",pt:"600 espaços, o maior rendimento per capita do mundo — ultra-premium, sinal de mixers desproporcionado."}}
+};
+
+const MARKET_ORDER=["PT","ES","DE","GB","FR","NL","BE","LU","SE","NO","IS","AD","MC"];
+const STATUS_META={ live:"live", active:"active", road:"road" };
+const CATS_ALL=["Soft drinks","Energy","Mixers"];
+</script>
+<script>
+/* ================= STATE ================= */
+let LANG="en", MK="PT", TAB="overview", CAT="Soft drinks";
+let wizStep=1, wizCountry="PT", wizCity=MARKETS.PT.cities[0], wizPin=null;
+let wizSel=new Set(DATAPOINTS.cats.map((c,i)=>c.k==="menu"?i:-1).filter(i=>i>=0));
+const $=id=>document.getElementById(id);
+
+/* ================= i18n ================= */
+const DICT={
+ en:{
+  tab_overview:"Overview", tab_menu:"Share of menu", tab_adjacency:"Adjacencies", tab_execution:"Physical execution", tab_price:"Price & positioning", tab_datapoints:"Data points", tab_coverage:"Coverage & markets", tab_pilot:"Request a pilot",
+  appctx:"Coca-Cola · CCEP<br><b>On-trade intelligence</b>", footMeta:"DIG-IN on-trade intelligence<br>Illustrative figures · real venue counts from the DIG-IN HoReCa model",
+  st_live:"Live", st_indb:"In our data", st_pilot:"Pilot-scanned", st_road:"Roadmap",
+  grp_live:"Live", grp_indb:"In our data · weeks to activate", grp_pilot:"Pilot-scanned", grp_road:"Roadmap · Europe",
+  sub_indb:"In our data", sub_pilot:"Soho read", sub_road:"Roadmap", mapped_lbl:"mapped",
+  flag_illustrative:"Illustrative data",
+  kpi_portfolio:"CCEP portfolio", kpi_flagship:"Coca-Cola on menus", kpi_zones:"Venues read", kpi_zones_d:"in scanned zones", kpi_universe:"Market universe", kpi_universe_d:"HoReCa venues", kpi_qoq:"vs last quarter",
+  layer_menu:"Share of menu", layer_exec:"Physical execution", layer_adj:"Adjacency", layer_price:"Price & positioning", layer_found:"Foundation & IDs",
+  ov_kicker_live:"Portugal · live", ov_h1:"The read we <em>already run</em> for Coca-Cola.", ov_lead:"How much of the menu Coca-Cola owns, where a rival is gaining, and where the fridge and the terrace fall behind the menu — every venue, every quarter. Independent.",
+  lc_title:"What we read", lc_menu_p:"Which drink brands are on the menu and in the room.", lc_adj_p:"What kind of venue lists Coca-Cola — and what sits beside it.", lc_exec_p:"Fridge, glassware, terrace, storefront: presence you can see.", lc_price_p:"Where each brand sits on price, and the demand around it.",
+  zt_title:"Zone by zone", zt_zone:"Zone", zt_venues:"Venues", zt_share:"Coca-Cola share", zt_qoq:"QoQ", zt_rival:"Top rival", zt_price:"Price idx", zt_premium:"Premium mix",
+  ins_title:"What the data says", ins_working:"Working", ins_exposed:"Exposed", ins_ws:"Where to grow", tag_grow:"Grow", tag_def:"Defend",
+  cta_coverage:"See coverage & markets →", cta_pilot:"Request a pilot →",
+  banner_indb_h:"Already in our data.", banner_pilot_h:"Read in Soho — preview only.", banner_road_h:"In the roadmap.",
+  banner_indb_s:"This market can be switched on for CCEP in weeks — the data already exists.", banner_pilot_s:"One zone scanned for the case study. Full coverage opens on activation.", banner_road_s:"Not read yet. First full picture in about 8 weeks from go.",
+  menu_lead:"Every brand on the drinks menu. Coca-Cola-owned brands in red — everything else is the field to win.", som_title:"Share of the drinks menu", owned_lbl:"CCEP-owned",
+  bt_brand:"Brand", bt_onmenu:"On menus", bt_qoq:"QoQ",
+  adj_lead:"What kind of venue Coca-Cola shows up in, and which rival drinks share the same menu.", adj_cui_title:"Over- and under-indexed venues", adj_riv_title:"Rivals on the same menu", adj_idxnote:"100 = the market average. Above = over-represented.",
+  exec_lead:"Menu presence is one thing. The fridge, the glass and the storefront are another — and they are usually behind.", exec_place_title:"Where the brands show up", exec_gap_title:"On the menu vs in the room", leg_leader:"Coca-Cola", leg_chal:"Top challenger", eg_menu:"On the menu",
+  price_lead:"Where each brand sits on price, and how premium the mix is by zone.", price_split_title:"Price tiers on the menu", price_clu_title:"Price vs premium mix, by zone", pl_premium:"Premium", pl_main:"Mainstream", pl_value:"Value", clu_x:"Price index →", clu_y:"Premium mix →",
+  dp_kicker:"What we deliver", dp_h:"253 data points, <em>every venue</em>.", dp_lead:"Per venue, refreshed on a regular cycle. Grouped by the four lenses you have just seen, plus the base that keeps every record clean and unique.", dp_total:"data points / venue", dp_cats:"categories",
+  cov_kicker:"Coverage & markets", cov_h:"Real coverage — and <em>two markets</em> already in our data.", cov_lead:"Portugal is live. Spain and Germany are already in the DIG-IN database — part of 500K+ venues across four countries. That makes them a switch-on, not a build.",
+  sc_venues:"venues mapped", sc_countries:"countries active", sc_pt:"in Portugal", sc_active:"PT + ES + DE universe",
+  goal_label:"markets live by end of 2026", map_title:"The markets", map_note:"Real venue universe per market. Click any market to load its read.",
+  comp_title:"Where DIG-IN fits", rec_title:"Recommended next", rec_explore:"Explore this market →", rec_universe:"Venue universe", rec_conf:"Confidence",
+  roll_title:"How activation works", roll:[["Week 0","Choose the zones","We agree the cities and areas that matter to CCEP."],["Weeks 1-3","Map every venue","We build the full venue list for those zones."],["Weeks 3-6","Read menu, fridge, terrace","We capture the brands on the menu and in the room."],["Week 7","First full picture","We review the read together and adjust."],["Ongoing","Live & refreshed","The read stays current, refreshed each quarter."]],
+  env_title:"Indicative investment", env1_l:"Per market · per year", env2_l:"PT + ES + DE bundle", env_cap:"Illustrative placeholder — replace with the commercial model before this is shown outside CCEP.",
+  why_title:"Why now",
+  why:[["Two markets are free.","Spain and Germany are already in our data — activation is weeks, not a build."],["The signal is already turning.","Germany shows Coca-Cola losing the menu to Mate brands. That is the reason to watch quarterly."],["One read, every market.","The same four lenses run in every country, so CCEP compares markets like-for-like."]],
+  pl_kicker:"Request a pilot", pl_h:"Scope a pilot in <em>three steps</em>.", pl_lead:"Pick a country and area, draw a 250 m zone on the map, choose the data points you want. We come back within 48 hours.",
+  ws1:"Where", ws1s:"country & area", ws2:"Data", ws2s:"pick data points", ws3:"Send", ws3s:"review & submit",
+  lbl_country:"Country", lbl_city:"City / area", canv_hint:"Click anywhere to drop a pin", rd_area:"Sample area", rd_venues:"Venues in zone", rd_help:"Drop a pin to draw a 250 m zone anywhere on the map.", rd_pending:"Drop a pin to continue",
+  wiz_next1:"Next: choose data →", wiz_back:"← Back", wiz_next2:"Next: review →", wiz_submit:"Submit request",
+  data_title:"Which data points do you want?", sel_all:"Select all", sel_clear:"Clear", tot_lbl:"data points / venue selected",
+  sum_title:"Review your request", sum_country:"Country", sum_area:"Sample area", sum_venues:"Venues in zone", sum_cats:"Categories", sum_points:"Data points / venue",
+  sent_h:"Request received", sent_p:"Our team will come back to you within 48 hours with the sample and a quote.", sent_ref:"Reference", sent_again:"New request",
+  locked_h:"On the roadmap", locked_p:"This market is not read yet. See the business case and the recommended markets in Coverage — or scope a pilot here.",
+  venues_word:"venues"
+ },
+ pt:{
+  tab_overview:"Visão geral", tab_menu:"Presença na carta", tab_adjacency:"Adjacências", tab_execution:"Execução física", tab_price:"Preço & posição", tab_datapoints:"Data points", tab_coverage:"Cobertura & mercados", tab_pilot:"Pedir um piloto",
+  appctx:"Coca-Cola · CCEP<br><b>Inteligência on-trade</b>", footMeta:"Inteligência on-trade DIG-IN<br>Valores ilustrativos · contagens reais do modelo HoReCa da DIG-IN",
+  st_live:"Ativo", st_indb:"Nos nossos dados", st_pilot:"Piloto lido", st_road:"Roadmap",
+  grp_live:"Ativo", grp_indb:"Nos nossos dados · semanas para ativar", grp_pilot:"Piloto lido", grp_road:"Roadmap · Europa",
+  sub_indb:"Nos nossos dados", sub_pilot:"Lido no Soho", sub_road:"Roadmap", mapped_lbl:"mapeados",
+  flag_illustrative:"Dados ilustrativos",
+  kpi_portfolio:"Portefólio CCEP", kpi_flagship:"Coca-Cola nas cartas", kpi_zones:"Espaços lidos", kpi_zones_d:"em zonas lidas", kpi_universe:"Universo do mercado", kpi_universe_d:"espaços HoReCa", kpi_qoq:"vs trimestre anterior",
+  layer_menu:"Presença na carta", layer_exec:"Execução física", layer_adj:"Adjacências", layer_price:"Preço & posicionamento", layer_found:"Base & IDs",
+  ov_kicker_live:"Portugal · ativo", ov_h1:"A leitura que <em>já fazemos</em> para a Coca-Cola.", ov_lead:"Quanto da carta a Coca-Cola detém, onde um rival cresce, e onde o frigorífico e a esplanada ficam atrás da carta — cada espaço, cada trimestre. Independente.",
+  lc_title:"O que lemos", lc_menu_p:"Que marcas de bebidas estão na carta e no espaço.", lc_adj_p:"Que tipo de espaço lista a Coca-Cola — e o que fica ao lado.", lc_exec_p:"Frigorífico, copo, esplanada, fachada: presença que se vê.", lc_price_p:"Onde cada marca está no preço, e a procura à volta.",
+  zt_title:"Zona a zona", zt_zone:"Zona", zt_venues:"Espaços", zt_share:"Quota Coca-Cola", zt_qoq:"Trim.", zt_rival:"Maior rival", zt_price:"Índice preço", zt_premium:"Mix premium",
+  ins_title:"O que os dados dizem", ins_working:"A ganhar", ins_exposed:"Exposto", ins_ws:"Onde crescer", tag_grow:"Crescer", tag_def:"Defender",
+  cta_coverage:"Ver cobertura & mercados →", cta_pilot:"Pedir um piloto →",
+  banner_indb_h:"Já nos nossos dados.", banner_pilot_h:"Lido no Soho — só amostra.", banner_road_h:"No roadmap.",
+  banner_indb_s:"Este mercado pode ser ligado para a CCEP em semanas — os dados já existem.", banner_pilot_s:"Uma zona lida para o caso de estudo. A cobertura total abre na ativação.", banner_road_s:"Ainda não lido. Primeira leitura completa em cerca de 8 semanas.",
+  menu_lead:"Todas as marcas na carta de bebidas. Marcas do portefólio CCEP a vermelho — o resto é o campo a ganhar.", som_title:"Presença na carta de bebidas", owned_lbl:"Portefólio CCEP",
+  bt_brand:"Marca", bt_onmenu:"Nas cartas", bt_qoq:"Trim.",
+  adj_lead:"Em que tipo de espaço a Coca-Cola aparece, e que bebidas rivais partilham a mesma carta.", adj_cui_title:"Espaços sobre e sub-indexados", adj_riv_title:"Rivais na mesma carta", adj_idxnote:"100 = média do mercado. Acima = sobre-representado.",
+  exec_lead:"A carta é uma coisa. O frigorífico, o copo e a fachada são outra — e costumam estar atrás.", exec_place_title:"Onde as marcas aparecem", exec_gap_title:"Na carta vs no espaço", leg_leader:"Coca-Cola", leg_chal:"Maior desafiante", eg_menu:"Na carta",
+  price_lead:"Onde cada marca está no preço, e quão premium é o mix por zona.", price_split_title:"Escalões de preço na carta", price_clu_title:"Preço vs mix premium, por zona", pl_premium:"Premium", pl_main:"Médio", pl_value:"Valor", clu_x:"Índice de preço →", clu_y:"Mix premium →",
+  dp_kicker:"O que entregamos", dp_h:"253 data points, <em>cada espaço</em>.", dp_lead:"Por espaço, atualizados num ciclo regular. Agrupados pelas quatro lentes que acabaste de ver, mais a base que mantém cada registo limpo e único.", dp_total:"data points / espaço", dp_cats:"categorias",
+  cov_kicker:"Cobertura & mercados", cov_h:"Cobertura real — e <em>dois mercados</em> já nos nossos dados.", cov_lead:"Portugal está ativo. Espanha e Alemanha já estão na base da DIG-IN — parte de 500K+ espaços em quatro países. Isso torna-os um ligar, não um construir.",
+  sc_venues:"espaços mapeados", sc_countries:"países ativos", sc_pt:"em Portugal", sc_active:"universo PT + ES + DE",
+  goal_label:"mercados ativos até ao fim de 2026", map_title:"Os mercados", map_note:"Universo real de espaços por mercado. Clica num mercado para carregar a leitura.",
+  comp_title:"Onde a DIG-IN encaixa", rec_title:"Próximos recomendados", rec_explore:"Explorar este mercado →", rec_universe:"Universo de espaços", rec_conf:"Confiança",
+  roll_title:"Como funciona a ativação", roll:[["Semana 0","Escolher as zonas","Acordamos as cidades e áreas que importam à CCEP."],["Semanas 1-3","Mapear cada espaço","Construímos a lista completa de espaços dessas zonas."],["Semanas 3-6","Ler carta, frigorífico, esplanada","Captamos as marcas na carta e no espaço."],["Semana 7","Primeira leitura completa","Revemos a leitura em conjunto e ajustamos."],["Contínuo","Ativo & atualizado","A leitura mantém-se atual, renovada a cada trimestre."]],
+  env_title:"Investimento indicativo", env1_l:"Por mercado · por ano", env2_l:"Pacote PT + ES + DE", env_cap:"Valor ilustrativo — substituir pelo modelo comercial antes de mostrar fora da CCEP.",
+  why_title:"Porquê agora",
+  why:[["Dois mercados estão de graça.","Espanha e Alemanha já estão nos nossos dados — ativar é semanas, não um construir."],["O sinal já está a virar.","A Alemanha mostra a Coca-Cola a perder a carta para as marcas de Mate. É a razão para acompanhar trimestralmente."],["Uma leitura, todos os mercados.","As mesmas quatro lentes correm em cada país, por isso a CCEP compara mercados a par."]],
+  pl_kicker:"Pedir um piloto", pl_h:"Define um piloto em <em>três passos</em>.", pl_lead:"Escolhe um país e área, desenha uma zona de 250 m no mapa, escolhe os data points que queres. Respondemos em 48 horas.",
+  ws1:"Onde", ws1s:"país & área", ws2:"Dados", ws2s:"escolher data points", ws3:"Enviar", ws3s:"rever & submeter",
+  lbl_country:"País", lbl_city:"Cidade / área", canv_hint:"Clica em qualquer sítio para largar o pino", rd_area:"Área da amostra", rd_venues:"Espaços na zona", rd_help:"Larga o pino para desenhar uma zona de 250 m em qualquer sítio do mapa.", rd_pending:"Larga o pino para continuar",
+  wiz_next1:"Seguinte: escolher dados →", wiz_back:"← Voltar", wiz_next2:"Seguinte: rever →", wiz_submit:"Submeter pedido",
+  data_title:"Que data points queres?", sel_all:"Selecionar tudo", sel_clear:"Limpar", tot_lbl:"data points / espaço selecionados",
+  sum_title:"Rever o pedido", sum_country:"País", sum_area:"Área da amostra", sum_venues:"Espaços na zona", sum_cats:"Categorias", sum_points:"Data points / espaço",
+  sent_h:"Pedido recebido", sent_p:"A nossa equipa responde em 48 horas com a amostra e um orçamento.", sent_ref:"Referência", sent_again:"Novo pedido",
+  locked_h:"No roadmap", locked_p:"Este mercado ainda não foi lido. Vê o business case e os mercados recomendados em Cobertura — ou define aqui um piloto.",
+  venues_word:"espaços"
+ }
+};
+const T=new Proxy({},{get:(_,k)=>DICT[LANG][k]});
+const tt=x=>(x&&typeof x==="object"&&("en" in x))?x[LANG]:x;
+
+/* ================= HELPERS ================= */
+function fmt(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, LANG==="pt"?".":","); }
+function fmtK(n){ if(n==null)return"—"; if(n>=1e6)return (n/1e6).toFixed(1).replace(".0","")+"M"; if(n>=1e4)return Math.round(n/1e3)+"K"; if(n>=1e3)return (n/1e3).toFixed(1).replace(".0","")+"K"; return String(n); }
+function density(m){ return Math.round(Math.max(170, Math.min(680, m.per1000*52))); }
+function colourMap(list,m){ let r=0,c=0; return list.map(([n])=> isCCEP(n,m)?RED[r++%RED.length]:COOL[c++%COOL.length]); }
+function paint(root){ requestAnimationFrame(()=>requestAnimationFrame(()=>{ (root||document).querySelectorAll("[data-w]").forEach(e=>{ e.style.width=e.getAttribute("data-w"); }); })); }
+const cur=()=>MARKETS[MK];
+const stLabel=m=> m.status==="live"?T.st_live : m.status==="active"?(m.inDB?T.st_indb:T.st_pilot) : T.st_road;
+
+/* ================= SEEDED DOTS (pilot map) ================= */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const _r=mulberry32(20260828); const DOTS=[]; for(let i=0;i<150;i++){ DOTS.push({x:24+_r()*592, y:20+_r()*320}); }
+function hexPts(cx,cy,r){ let p=[]; for(let i=0;i<6;i++){ let a=Math.PI/180*(60*i-90); p.push([cx+r*Math.cos(a), cy+r*Math.sin(a)]); } return p; }
+function inPoly(px,py,pts){ let inside=false; for(let i=0,j=pts.length-1;i<pts.length;j=i++){ let xi=pts[i][0],yi=pts[i][1],xj=pts[j][0],yj=pts[j][1]; if(((yi>py)!=(yj>py))&&(px<(xj-xi)*(py-yi)/(yj-yi)+xi))inside=!inside; } return inside; }
+
+/* ================= LANG / DROPDOWN / SELECTOR ================= */
+function applyLang(l){ LANG=l; document.documentElement.lang=l;
+  document.querySelectorAll("#lang button").forEach(b=>b.classList.toggle("on",b.dataset.l===l));
+  $("appctx").innerHTML=T.appctx; $("footMeta").innerHTML=T.footMeta;
+  document.querySelectorAll(".tlabel").forEach(e=>e.textContent=T[e.dataset.k]);
+  updateSelBtn(); buildDropdown(); renderActive();
+}
+function updateSelBtn(){ const m=cur(); $("mselFlag").textContent=m.flag; $("mselName").textContent=m.name;
+  $("mselStatus").className="mst "+m.status; $("mselStatus").innerHTML=`<span class="stdot ${m.status}"></span>`+stLabel(m); }
+function buildDropdown(){
+  const groups=[ ["live", T.grp_live, c=>MARKETS[c].status==="live"],
+    ["indb", T.grp_indb, c=>MARKETS[c].inDB&&MARKETS[c].status!=="live"],
+    ["pilot", T.grp_pilot, c=>MARKETS[c].pilotScan],
+    ["road", T.grp_road, c=>MARKETS[c].status==="road"] ];
+  let h="";
+  groups.forEach(([key,label,test])=>{ const list=MARKET_ORDER.filter(test); if(!list.length)return;
+    h+=`<div class="grp"><span>${label}</span><span>${list.length}</span></div>`;
+    list.forEach(c=>{ const m=MARKETS[c]; const sub = m.status==="live"?`${fmtK(m.mapped)} ${T.mapped_lbl}`:(m.pilotScan?T.sub_pilot:(m.inDB?T.sub_indb:T.sub_road));
+      h+=`<button class="mopt ${c===MK?"sel":""} ${m.recommended?"rec":""}" onclick="setMarket('${c}')"><span class="flag">${m.flag}</span><span class="nm">${m.name}<small>${sub}</small></span><span class="poi">${fmtK(m.poi)}<br><span style="font-size:8.5px;color:var(--ink-faint)">${T.venues_word}</span></span></button>`; });
+  });
+  $("mpanel").innerHTML=h;
+}
+function setMarket(c){ MK=c; const cc=MARKETS[c].cats; if(cc&&!cc.includes(CAT))CAT=cc[0]; updateSelBtn(); buildDropdown(); $("msel").classList.remove("open"); renderActive(); }
+
+/* ================= TABS ================= */
+function goTab(t){ TAB=t; document.querySelectorAll(".view").forEach(v=>v.classList.remove("on")); $("tab-"+t).classList.add("on");
+  document.querySelectorAll("#tabs .tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===t)); renderActive();
+  try{window.scrollTo({top:0,behavior:"smooth"});}catch(e){} }
+function setCat(c){ CAT=c; renderActive(); }
+
+function renderActive(){
+  const m=cur();
+  if(TAB==="overview") renderOverview(m);
+  else if(TAB==="menu") gate(m,"menuWrap",renderMenu);
+  else if(TAB==="adjacency") gate(m,"adjWrap",renderAdjacency);
+  else if(TAB==="execution") gate(m,"execWrap",renderExecution);
+  else if(TAB==="price") gate(m,"priceWrap",renderPrice);
+  else if(TAB==="datapoints") renderDatapoints();
+  else if(TAB==="coverage") renderCoverage();
+  else if(TAB==="pilot") renderPilot();
+}
+function gate(m,wrapId,fn){
+  if(m.status==="road"){ $(wrapId).innerHTML=`<div class="locked"><div class="lk">◗</div><h3>${m.flag} ${m.name} · ${T.locked_h}</h3><p>${T.locked_p}</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="cta primary" onclick="goTab('coverage')">${T.cta_coverage}</button><button class="cta ghost" onclick="goTab('pilot')">${T.cta_pilot}</button></div></div>`; return; }
+  fn(m); paint($(wrapId));
+}
+
+/* ================= SHARED PIECES ================= */
+function hero(kicker,titleHTML,lead,flag){
+  return `<div class="headrow"><div><div class="kicker">${kicker}</div><h1 class="big">${titleHTML}</h1></div>${flag?`<span class="demo-flag">${T.flag_illustrative}</span>`:""}</div><p class="lead">${lead}</p>`;
+}
+function kpiStrip(m){
+  const q=m.kpi.qoq, qs=(q>0?"+":"")+q.toFixed(1);
+  return `<div class="kpis">
+    <div class="kpi"><div class="k">${T.kpi_portfolio}</div><div class="v coke">${m.kpi.ccep}%</div><div class="d">${T.owned_lbl}</div></div>
+    <div class="kpi"><div class="k">${T.kpi_flagship}</div><div class="v">${m.kpi.ccFlag}%</div><div class="d">Coca-Cola</div></div>
+    <div class="kpi"><div class="k">${T.kpi_zones}</div><div class="v">${fmt(m.deepVenues)}</div><div class="d">${T.kpi_zones_d}</div></div>
+    <div class="kpi"><div class="k">${T.kpi_universe}</div><div class="v">${fmtK(m.poi)}</div><div class="d">${T.kpi_universe_d}</div></div>
+    <div class="kpi"><div class="k">${T.kpi_qoq}</div><div class="v ${q>=0?"up":"dn"}">${qs}</div><div class="d">pts</div></div>
+  </div>`;
+}
+function layerCards(){
+  const map=[["menu",T.layer_menu,T.lc_menu_p],["adj",T.layer_adj,T.lc_adj_p],["exec",T.layer_exec,T.lc_exec_p],["price",T.layer_price,T.lc_price_p]];
+  const n=k=>DP_LAYERS.find(l=>l.k===k).n;
+  return `<div class="previewgrid">${map.map(([k,h,p])=>`<div class="pvcell"><div class="pi">${n(k)} data points</div><div class="ph">${h}</div><div class="pp">${p}</div></div>`).join("")}</div>`;
+}
+function zoneTable(m){
+  return `<div class="ztable-wrap"><table class="ztable"><thead><tr><th>${T.zt_zone}</th><th class="num">${T.zt_venues}</th><th>${T.zt_share}</th><th class="num">${T.zt_qoq}</th><th>${T.zt_rival}</th><th class="num">${T.zt_price}</th><th class="num">${T.zt_premium}</th></tr></thead><tbody>${m.zones.map(z=>{
+    const d=z.delta, dc=d>0?"up":d<0?"dn":"flat", ds=(d>0?"+":"")+d;
+    return `<tr><td><span class="zn">${z.name}</span><span class="zb">${z.area}</span></td><td class="num">${fmt(z.venues)}</td><td><span class="mini"><span class="minif" data-w="${z.ccShare}%"></span></span><span class="cc">${z.ccShare}%</span></td><td class="num"><span class="delta ${dc}">${ds}</span></td><td>${z.rival.name} ${z.rival.share}%</td><td class="num">${z.priceIdx}</td><td class="num">${z.premium}%</td></tr>`;
+  }).join("")}</tbody></table></div>`;
+}
+
+/* ================= OVERVIEW ================= */
+function renderOverview(m){
+  let h="";
+  if(m.status==="live"){
+    h+=hero(T.ov_kicker_live, T.ov_h1, T.ov_lead, true);
+    h+=kpiStrip(m);
+    h+=`<div class="blockhead"><span class="num">01</span><h3>${T.lc_title}</h3></div>`+layerCards();
+    h+=`<div class="blockhead"><span class="num">02</span><h3>${T.zt_title}</h3></div>`+zoneTable(m);
+    const I=m.insights;
+    h+=`<div class="blockhead"><span class="num">03</span><h3>${T.ins_title}</h3></div>`;
+    h+=`<div class="verdict"><div class="vscore"><div class="vn">${I.score}</div><div class="vl">${tt(I.label)}</div></div><div class="vtext">${tt(I.verdict)}</div></div>`;
+    h+=`<div class="panels"><div class="panel"><h4>${T.ins_working}<span class="tag">CCEP</span></h4><div class="ins-list">${I.strong.map(s=>`<div class="irow"><span class="ic win"></span><span class="itx">${tt(s)}</span></div>`).join("")}</div></div><div class="panel"><h4>${T.ins_exposed}</h4><div class="ins-list">${I.exposed.map(s=>`<div class="irow"><span class="ic lose"></span><span class="itx">${tt(s)}</span></div>`).join("")}</div></div></div>`;
+    h+=`<div class="blockhead"><span class="num">04</span><h3>${T.ins_ws}</h3></div><div class="wsgrid">${I.whitespace.map(w=>`<div class="wscell"><div class="wt">${tt(w.t)} <span class="wtag ${w.cls}">${w.cls==="grow"?T.tag_grow:T.tag_def}</span></div><div class="wnote">${tt(w.note)}</div></div>`).join("")}</div>`;
+    h+=cta("coverage");
+  } else if(m.status==="active"){
+    h+=hero(`${m.flag} ${m.name} · ${stLabel(m)}`, m.name, tt(m.pitch), true);
+    const isPilot=m.pilotScan;
+    h+=`<div class="banner pilot" style="margin-top:26px"><div><div class="bh">${isPilot?T.banner_pilot_h:T.banner_indb_h}</div><div class="bs">${isPilot?T.banner_pilot_s:T.banner_indb_s}</div></div><button class="cta primary" onclick="goTab('menu')">${T.tab_menu} →</button></div>`;
+    h+=kpiStrip(m);
+    h+=`<div class="blockhead"><span class="num">01</span><h3>${T.zt_title}</h3></div>`+zoneTable(m);
+    h+=`<div class="blockhead"><span class="num">02</span><h3>${T.lc_title}</h3></div>`+layerCards();
+    h+=cta("coverage");
+  } else {
+    h+=hero(`${m.flag} ${m.name} · ${T.st_road}`, m.name, tt(m.why), false);
+    h+=`<div class="banner road" style="margin-top:26px"><div><div class="bh">${T.banner_road_h}</div><div class="bs">${T.banner_road_s} · ${fmtK(m.poi)} ${T.venues_word}.</div></div><button class="cta primary" onclick="goTab('pilot')">${T.cta_pilot}</button></div>`;
+    h+=`<div class="blockhead"><span class="num">01</span><h3>${T.lc_title}</h3></div>`+layerCards();
+    h+=cta("coverage");
+  }
+  $("ovWrap").innerHTML=h; paint($("ovWrap"));
+}
+function cta(tab){ return `<div style="margin-top:34px;display:flex;gap:10px;flex-wrap:wrap"><button class="cta primary" onclick="goTab('${tab}')">${tab==="coverage"?T.cta_coverage:T.cta_pilot}</button></div>`; }
+
+/* ================= CATEGORY BAR ================= */
+function catBar(m){
+  if(!m.cats.includes(CAT))CAT=m.cats[0];
+  if(m.cats.length<2) return "";
+  return `<div class="catbtns">${CATS_ALL.map(c=>`<button class="catbtn ${c===CAT?"on":""}" ${m.cats.includes(c)?"":"disabled"} onclick="setCat('${c}')">${c}</button>`).join("")}</div>`;
+}
+
+/* ================= SHARE OF MENU ================= */
+function renderMenu(m){
+  if(!m.cats.includes(CAT))CAT=m.cats[0];
+  const som=m.som[CAT], cols=colourMap(som,m);
+  const owned=som.filter(([n])=>isCCEP(n,m)).reduce((a,[,v])=>a+v,0);
+  let h=hero(`${m.flag} ${m.name}`, T.tab_menu, T.menu_lead, true)+catBar(m);
+  h+=`<div class="blockhead"><span class="num">01</span><h3>${T.som_title} · ${CAT}</h3></div>`;
+  h+=`<div class="somrow"><div class="somtop"><span>${CAT}</span><span><b>${owned}%</b> ${T.owned_lbl}</span></div><div class="somstack">${som.map(([n,v],i)=>`<div class="somseg ${isCCEP(n,m)?"ccep":""}" data-w="${v}%" style="background:${cols[i]}">${v>=7?v:""}</div>`).join("")}</div><div class="somleg">${som.map(([n,v],i)=>`<span><span class="sw" style="background:${cols[i]}"></span>${n} ${v}%</span>`).join("")}</div></div>`;
+  const top=m.top[CAT], mx=Math.max(...top.map(t=>t[1]));
+  h+=`<div class="blockhead"><span class="num">02</span><h3>${T.bt_onmenu} · ${CAT}</h3></div>`;
+  h+=`<table class="btable"><thead><tr><th>#</th><th>${T.bt_brand}</th><th>${T.bt_onmenu}</th><th class="num">${T.bt_qoq}</th></tr></thead><tbody>${top.map((t,i)=>{
+    const [n,v,d]=t, own=isCCEP(n,m), col=own?"var(--coke)":"#586470", dc=d>0?"up":d<0?"dn":"flat", ds=(d>0?"+":"")+d;
+    return `<tr><td class="rank">${i+1}</td><td><span class="bname">${n}</span>${own?`<span class="owntag">CCEP</span>`:""}</td><td><span class="pbar-track"><span class="pbar-fill" data-w="${Math.round(v/mx*100)}%" style="background:${col}"></span></span><span class="cc">${v}%</span></td><td class="num"><span class="delta ${dc}">${ds}</span></td></tr>`;
+  }).join("")}</tbody></table>`;
+  $("menuWrap").innerHTML=h;
+}
+
+/* ================= ADJACENCIES ================= */
+function renderAdjacency(m){
+  const a=m.adjacency, maxDev=Math.max(...a.cuisines.map(c=>Math.abs(c[1]-100)));
+  let h=hero(`${m.flag} ${m.name}`, T.tab_adjacency, T.adj_lead, true);
+  h+=`<div class="blockhead"><span class="num">01</span><h3>${T.adj_cui_title} · ${a.brand}</h3></div><div class="blocksub">${T.adj_idxnote}</div>`;
+  h+=a.cuisines.map(([lab,idx])=>{ const over=idx>=100, w=Math.round(Math.abs(idx-100)/maxDev*50);
+    return `<div class="adjrow"><div class="name">${tt(lab)}</div><div class="idxtrack"><div class="idxbase"></div><div class="idxfill ${over?"":"under"}" data-w="${w}%"></div></div><div class="idxval">${idx}</div></div>`;
+  }).join("");
+  const mxr=Math.max(...a.rivals.map(r=>r[1]));
+  h+=`<div class="blockhead"><span class="num">02</span><h3>${T.adj_riv_title}</h3></div>`;
+  h+=a.rivals.map(([n,p])=>`<div class="rivalrow"><div class="name">${n}</div><div class="rtrack"><div class="rfill" data-w="${Math.round(p/mxr*100)}%"></div></div><div class="rpct">${p}%</div></div>`).join("");
+  h+=`<div class="note">${tt(a.read)}</div>`;
+  $("adjWrap").innerHTML=h;
+}
+
+/* ================= PHYSICAL EXECUTION ================= */
+function renderExecution(m){
+  const p=m.placement;
+  let h=hero(`${m.flag} ${m.name}`, T.tab_execution, T.exec_lead, true);
+  h+=`<div class="placement-head"><span class="pt">${T.exec_place_title}</span><div class="plegend"><span><span class="sw" style="background:var(--coke)"></span>${T.leg_leader}</span><span><span class="sw" style="background:#586470"></span>${T.leg_chal} · ${p.challenger}</span></div></div>`;
+  h+=`<div class="pgrid">${p.zones.map(z=>`<div><div class="pzone-name">${tt(z.zone)}</div>${z.materials.map(([nm,lv,cv])=>`<div class="matrow"><div class="mname">${nm}</div><div class="matbar"><div class="mt"><span class="mf lead" data-w="${lv}%"></span></div><span class="mv">${lv}</span></div><div class="matbar"><div class="mt"><span class="mf chal" data-w="${cv}%"></span></div><span class="mv">${cv}</span></div></div>`).join("")}</div>`).join("")}</div>`;
+  const eg=m.execGap;
+  h+=`<div class="blockhead"><span class="num">·</span><h3>${T.exec_gap_title}</h3></div><div class="blocksub">${T.eg_menu}: <b style="color:var(--coke-2)">${eg.menu}%</b></div>`;
+  h+=eg.rows.map(([nm,v])=>`<div class="execline"><div class="en">${nm}</div><div class="etr"><div class="elist" data-w="${eg.menu}%"></div><div class="edeep" data-w="${v}%"></div></div><div class="eg">${v}% <b>−${eg.menu-v}</b></div></div>`).join("");
+  h+=`<div class="note">${tt(eg.note)}</div>`;
+  $("execWrap").innerHTML=h;
+}
+
+/* ================= PRICE & POSITIONING ================= */
+function renderPrice(m){
+  if(!m.cats.includes(CAT))CAT=m.cats[0];
+  const pr=m.price[CAT];
+  let h=hero(`${m.flag} ${m.name}`, T.tab_price, T.price_lead, true)+catBar(m);
+  h+=`<div class="blockhead"><span class="num">01</span><h3>${T.price_split_title} · ${CAT}</h3></div>`;
+  h+=`<div class="pricehead"><span class="cat">${CAT}</span><span class="idx">idx <b>${pr.idx}</b></span></div><div class="pricesplit"><div data-w="${pr.premium}%" style="background:var(--coke)"></div><div data-w="${pr.mainstream}%" style="background:#4a5560"></div><div data-w="${pr.value}%" style="background:#2a3038"></div></div><div class="pricelabels"><span>${T.pl_premium} ${pr.premium}%</span><span>${T.pl_main} ${pr.mainstream}%</span><span>${T.pl_value} ${pr.value}%</span></div>`;
+  // cluster
+  const zs=m.zones, pmin=85,pmax=145;
+  h+=`<div class="blockhead"><span class="num">02</span><h3>${T.price_clu_title}</h3></div>`;
+  h+=`<div class="clusterwrap"><span class="clusaxis" style="left:14px;top:10px">${T.clu_y}</span><span class="clusaxis" style="right:14px;bottom:10px">${T.clu_x}</span>${zs.map(z=>{ const x=8+(Math.max(pmin,Math.min(pmax,z.priceIdx))-pmin)/(pmax-pmin)*84; const y=90-(Math.max(10,Math.min(50,z.premium))-10)/40*78; return `<div class="cpt" style="left:${x}%;top:${y}%"><div class="cd"></div><div class="cl">${z.area} · ${z.priceIdx}</div></div>`; }).join("")}</div>`;
+  const tz=zs.slice().sort((a,b)=>b.premium-a.premium)[0];
+  const read = LANG==="en"?`<b>${tz.area}</b> carries the most premium mix (${tz.premium}%). Higher-price zones are where the premium range earns its place.`:`<b>${tz.area}</b> tem o mix mais premium (${tz.premium}%). As zonas de preço mais alto são onde a gama premium ganha o seu lugar.`;
+  h+=`<div class="note">${read}</div>`;
+  $("priceWrap").innerHTML=h;
+}
+
+/* ================= DATA POINTS ================= */
+function renderDatapoints(){
+  const layerLbl={menu:T.layer_menu,exec:T.layer_exec,adj:T.layer_adj,price:T.layer_price,found:T.layer_found};
+  let h=hero(T.dp_kicker, T.dp_h, T.dp_lead, false);
+  h+=`<div class="dpchips">${DP_LAYERS.map(l=>`<div class="dpchip ${l.ml?"on-menu":""}"><div class="dcn">${l.n}</div><div class="dcl">${layerLbl[l.k]}</div></div>`).join("")}</div>`;
+  h+=`<div class="blockhead"><span class="num">${DATAPOINTS.total}</span><h3>${DATAPOINTS.total} ${T.dp_total} · 21 ${T.dp_cats}</h3></div>`;
+  h+=`<div class="dpgrid">${DATAPOINTS.cats.map(c=>`<div class="dpcard"><div class="dptop"><div class="dpcat">${tt(c.name)}</div><div class="dpn">${c.n}</div></div><span class="dplayer ${c.ml?"menu":""}">${layerLbl[c.k]}</span><div class="dpdesc">${tt(c.d)}</div></div>`).join("")}</div>`;
+  $("dpWrap").innerHTML=h;
+}
+
+/* ================= COVERAGE & MARKETS ================= */
+function renderCoverage(){
+  const live=MARKET_ORDER.filter(c=>MARKETS[c].status==="live").length;
+  const indb=MARKET_ORDER.filter(c=>MARKETS[c].inDB&&MARKETS[c].status!=="live").length;
+  let h=hero(T.cov_kicker, T.cov_h, T.cov_lead, false);
+  h+=`<div class="scalebar"><div class="scalestat"><div class="sv acc">${SCALE.venues}</div><div class="sk">${T.sc_venues}</div></div><div class="scalestat"><div class="sv">${SCALE.countries}</div><div class="sk">${T.sc_countries}</div></div><div class="scalestat"><div class="sv">${SCALE.ptMapped}</div><div class="sk">${T.sc_pt}</div></div><div class="scalestat"><div class="sv coke">${SCALE.active}</div><div class="sk">${T.sc_active}</div></div></div>`;
+  // goal + why
+  const goal=live+indb, pct=Math.round(live/3*100);
+  h+=`<div class="covtop" style="margin-top:34px"><div class="valuelist">${T.why.map(w=>`<div class="vitem"><span class="vk"></span><div class="vt"><b>${w[0]}</b> ${w[1]}</div></div>`).join("")}</div><div class="gauge"><div style="width:130px;height:130px;border-radius:50%;background:conic-gradient(var(--live) 0% ${pct}%, var(--panel-3) ${pct}% 100%);display:flex;align-items:center;justify-content:center"><div style="width:96px;height:96px;border-radius:50%;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700">${live}<span style="color:var(--ink-faint);font-size:18px">/3</span></div></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);text-align:center;max-width:150px">${T.goal_label}</div></div></div>`;
+  // map
+  h+=`<div class="blockhead"><span class="num">01</span><h3>${T.map_title}</h3></div><div class="blocksub">${T.map_note}</div>`;
+  h+=`<div class="mkgrid">${MARKET_ORDER.map(c=>{ const m=MARKETS[c]; const barw=m.status==="live"?85:m.inDB?60:m.pilotScan?30:9; const barc=m.status==="live"?"var(--live)":m.status==="active"?"var(--avail)":"#3a4046"; const cf=m.confidence.toLowerCase();
+    return `<div class="mktile ${m.recommended?"rec":""}" onclick="setMarket('${c}');goTab('overview')">${m.recommended?`<span class="rflag">${T.rec_title.split(" ")[0]}</span>`:""}<div class="mkflag">${m.flag}</div><div class="mkname">${m.name}</div><div class="mkst ${m.status}"><span class="stdot ${m.status}"></span>${stLabel(m)}</div><div class="mkpoi">${fmtK(m.poi)}<small>${T.venues_word.toUpperCase()}</small></div><div class="mkbar"><span class="mkbf" data-w="${barw}%" style="background:${barc}"></span></div><span class="conf ${cf}">${m.confidence}</span></div>`;
+  }).join("")}</div>`;
+  // competitors
+  h+=`<div class="blockhead"><span class="num">02</span><h3>${T.comp_title}</h3></div>`;
+  h+=`<div class="compgrid">${COMPETITORS.map(c=>`<div class="compcell ${c.us?"us":""}"><div class="cpn">${c.name}</div><div class="cpb">${c.base}</div><div class="cpm">${tt(c.cov)}</div><div class="cpm" style="margin-top:5px"><b>${tt(c.core)}</b></div><div class="cpp">${tt(c.note)}</div></div>`).join("")}</div>`;
+  // recommended
+  h+=`<div class="blockhead"><span class="num">03</span><h3>${T.rec_title}</h3></div>`;
+  const recs=MARKET_ORDER.filter(c=>MARKETS[c].recommended);
+  h+=`<div class="recgrid">${recs.map(c=>{ const m=MARKETS[c]; return `<div class="reccard"><div class="rank2">${T.rec_title} · ${m.recRank}</div><h3>${m.flag} ${m.name}</h3><div class="why">${T.sub_indb}</div><p>${tt(m.pitch)}</p><div class="recstats"><div class="rs"><div class="k">${T.rec_universe}</div><div class="v">${fmtK(m.poi)}</div></div><div class="rs"><div class="k">${T.rec_conf}</div><div class="v coke">${m.confidence}</div></div></div><div style="margin-top:16px"><button class="cta ghost" onclick="setMarket('${c}');goTab('overview')">${T.rec_explore}</button></div></div>`; }).join("")}</div>`;
+  // rollout
+  h+=`<div class="blockhead"><span class="num">04</span><h3>${T.roll_title}</h3></div>`;
+  h+=`<div class="timeline">${T.roll.map((s,i)=>`<div class="tstep"><div class="tno">0${i+1}</div><div class="tw">${s[0]}</div><div class="th">${s[1]}</div><div class="tp">${s[2]}</div></div>`).join("")}</div>`;
+  // envelope
+  h+=`<div class="blockhead"><span class="num">05</span><h3>${T.env_title}</h3></div>`;
+  h+=`<div class="envelope"><div class="envcard"><div class="el">${T.env1_l}</div><div class="ev">€95–130K</div><div class="ecap">${T.env_cap}</div></div><div class="envcard"><div class="el">${T.env2_l}</div><div class="ev">€230–300K <small>/ ${LANG==="en"?"yr":"ano"}</small></div><div class="ecap">${T.env_cap}</div></div></div>`;
+  $("covWrap").innerHTML=h; paint($("covWrap"));
+}
+
+/* ================= REQUEST A PILOT (WIZARD) ================= */
+function wizSteps(){
+  const s=[[1,T.ws1,T.ws1s],[2,T.ws2,T.ws2s],[3,T.ws3,T.ws3s]];
+  const cur = wizStep==="sent"?4:wizStep;
+  return `<div class="wizsteps">${s.map(([n,l,sub])=>`<div class="wizstep ${n===cur?"on":n<cur?"done":""}"><div class="wn">${n<cur?"✓":n}</div><div class="wl">${l}<small>${sub}</small></div></div>`).join("")}</div>`;
+}
+function wizVenues(){ return Math.round(density(MARKETS[wizCountry])*0.16); }
+function wizCanvas(){
+  let pinEls="", pinR=78;
+  let dotFill=DOTS.map(()=>"#2a3038");
+  if(wizPin){ const hp=hexPts(wizPin.x,wizPin.y,pinR); DOTS.forEach((d,i)=>{ if(inPoly(d.x,d.y,hp)) dotFill[i]="var(--coke)"; });
+    const pts=hp.map(p=>p[0].toFixed(0)+","+p[1].toFixed(0)).join(" ");
+    pinEls=`<polygon points="${pts}" fill="rgba(232,255,79,.09)" stroke="var(--accent)" stroke-width="1.5"/><circle cx="${wizPin.x}" cy="${wizPin.y}" r="5" fill="var(--accent)"/><circle cx="${wizPin.x}" cy="${wizPin.y}" r="10" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".5"/>`;
+  }
+  const grid=[...Array(9)].map((_,i)=>`<line x1="${i*80}" y1="0" x2="${i*80}" y2="360" stroke="#1c2126" stroke-width="1"/>`).join("")+[...Array(5)].map((_,i)=>`<line x1="0" y1="${i*80}" x2="640" y2="${i*80}" stroke="#1c2126" stroke-width="1"/>`).join("");
+  const dots=DOTS.map((d,i)=>`<circle cx="${d.x.toFixed(0)}" cy="${d.y.toFixed(0)}" r="3" fill="${dotFill[i]}"/>`).join("");
+  return `<div class="wizcanvas"><div class="canvhint">${T.canv_hint}</div><svg viewBox="0 0 640 360" onclick="wizDrop(event)">${grid}${dots}${pinEls}</svg></div>`;
+}
+function renderPilot(){
+  const wrap=$("pilotWrap");
+  if(wizStep==="sent"){
+    const ref="DIG-"+wizCountry+"-"+(1000+Math.floor(_r()*8999));
+    wrap.innerHTML=hero(T.pl_kicker,T.pl_h,T.pl_lead,false)+`<div class="wizsent"><div class="tick">✓</div><h3>${T.sent_h}</h3><p>${T.sent_p}</p><div class="ref">${T.sent_ref}: ${ref}</div><div style="margin-top:24px"><button class="btn ghost" onclick="wizReset()">${T.sent_again}</button></div></div>`;
+    return;
+  }
+  let h=hero(T.pl_kicker,T.pl_h,T.pl_lead,false)+wizSteps()+`<div class="wizpane">`;
+  if(wizStep===1){
+    const m=MARKETS[wizCountry];
+    h+=`<div class="wizgrid"><div><div class="selrow"><div class="selfield"><label>${T.lbl_country}</label><select class="fsel" onchange="wizSetCountry(this.value)">${MARKET_ORDER.map(c=>`<option value="${c}" ${c===wizCountry?"selected":""}>${MARKETS[c].flag}  ${MARKETS[c].name}</option>`).join("")}</select></div><div class="selfield"><label>${T.lbl_city}</label><select class="fsel" onchange="wizSetCity(this.value)">${m.cities.map(c=>`<option ${c===wizCity?"selected":""}>${c}</option>`).join("")}</select></div></div>${wizCanvas()}</div><div class="wizside"><div class="wizreadout"><div class="rd"><span class="rdk">${T.rd_area}</span><span class="rdv acc">250 m</span></div><div class="rd"><span class="rdk">${T.rd_venues}</span><span class="rdv coke">${wizPin?"~"+wizVenues():"—"}</span></div></div><div style="font-size:12px;color:var(--ink-faint);line-height:1.55">${T.rd_help}</div></div></div>`;
+    h+=`<div class="btnrow"><span></span><button class="btn primary" ${wizPin?"":"disabled"} onclick="wizGo(2)">${wizPin?T.wiz_next1:T.rd_pending}</button></div>`;
+  } else if(wizStep===2){
+    const byLayer={};DATAPOINTS.cats.forEach((c,i)=>{(byLayer[c.k]=byLayer[c.k]||[]).push(i);});
+    const layerLbl={menu:T.layer_menu,exec:T.layer_exec,adj:T.layer_adj,price:T.layer_price,found:T.layer_found};
+    let total=0; wizSel.forEach(i=>total+=DATAPOINTS.cats[i].n);
+    h+=`<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:6px"><h3 style="font-family:'Fraunces',serif;font-size:20px;font-weight:600">${T.data_title}</h3><div style="display:flex;gap:16px"><button class="selectall" onclick="wizAll()">${T.sel_all}</button><button class="selectall" style="color:var(--ink-faint)" onclick="wizClear()">${T.sel_clear}</button></div></div>`;
+    ["menu","exec","adj","price","found"].forEach(k=>{ const idxs=byLayer[k]; const sub=idxs.reduce((a,i)=>a+(wizSel.has(i)?DATAPOINTS.cats[i].n:0),0);
+      h+=`<div class="checkgroup"><div class="checkgrouphead"><span>${layerLbl[k]}</span><b>${sub} / ${idxs.reduce((a,i)=>a+DATAPOINTS.cats[i].n,0)}</b></div><div class="checkitems">${idxs.map(i=>{const c=DATAPOINTS.cats[i];return `<div class="checkitem ${wizSel.has(i)?"on":""}" onclick="wizTog(${i})"><span class="checkbox"></span><span class="ci-name">${tt(c.name)}<small>${c.n} data points</small></span></div>`;}).join("")}</div></div>`;
+    });
+    h+=`<div class="wiztotal"><span class="wtl">${T.tot_lbl}</span><span class="wtv">${total}</span></div>`;
+    h+=`<div class="btnrow"><button class="btn ghost" onclick="wizGo(1)">${T.wiz_back}</button><button class="btn primary" ${total?"":"disabled"} onclick="wizGo(3)">${T.wiz_next2}</button></div>`;
+  } else if(wizStep===3){
+    let total=0,cats=0; wizSel.forEach(i=>{total+=DATAPOINTS.cats[i].n;cats++;});
+    const m=MARKETS[wizCountry];
+    h+=`<div class="sumcard"><div class="sumrow"><span class="sk">${T.sum_country}</span><span class="sv">${m.flag} ${m.name}</span></div><div class="sumrow"><span class="sk">${T.lbl_city}</span><span class="sv">${wizCity}</span></div><div class="sumrow"><span class="sk">${T.sum_area}</span><span class="sv">250 m · <b>~${wizVenues()}</b> ${T.venues_word}</span></div><div class="sumrow"><span class="sk">${T.sum_cats}</span><span class="sv">${cats} / 21</span></div><div class="sumrow"><span class="sk">${T.sum_points}</span><span class="sv"><b>${total}</b></span></div></div>`;
+    h+=`<div class="btnrow"><button class="btn ghost" onclick="wizGo(2)">${T.wiz_back}</button><button class="btn primary" onclick="wizSubmit()">${T.wiz_submit}</button></div>`;
+  }
+  h+=`</div>`;
+  wrap.innerHTML=h;
+}
+function wizGo(s){ wizStep=s; renderPilot(); }
+function wizSetCountry(c){ wizCountry=c; wizCity=MARKETS[c].cities[0]; wizPin=null; renderPilot(); }
+function wizSetCity(v){ wizCity=v; renderPilot(); }
+function wizDrop(e){ const svg=e.currentTarget, r=svg.getBoundingClientRect(); wizPin={x:(e.clientX-r.left)/r.width*640, y:(e.clientY-r.top)/r.height*360}; renderPilot(); }
+function wizTog(i){ if(wizSel.has(i))wizSel.delete(i); else wizSel.add(i); renderPilot(); }
+function wizAll(){ DATAPOINTS.cats.forEach((c,i)=>wizSel.add(i)); renderPilot(); }
+function wizClear(){ wizSel.clear(); renderPilot(); }
+function wizSubmit(){ wizStep="sent"; renderPilot(); }
+function wizReset(){ wizStep=1; wizPin=null; renderPilot(); }
+
+/* ================= WIRING + INIT ================= */
+document.querySelectorAll("#lang button").forEach(b=>b.onclick=()=>applyLang(b.dataset.l));
+document.querySelectorAll("#tabs .tab").forEach(b=>b.onclick=()=>goTab(b.dataset.tab));
+$("mselBtn").onclick=e=>{ e.stopPropagation(); $("msel").classList.toggle("open"); };
+document.addEventListener("click",e=>{ if(!$("msel").contains(e.target)) $("msel").classList.remove("open"); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") $("msel").classList.remove("open"); });
+
+applyLang("en");
+</script>
+</body>
+</html>
