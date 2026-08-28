@@ -493,9 +493,9 @@ const RED=["#f5001d","#ff5563","#b30d18","#ff8a94","#7d0912","#d10c1a"];
 const COOL=["#4fd6ff","#b18cff","#e8ff4f","#37d6b8","#6b7480","#5a8dee","#e879b8"];
 function isCCEP(n,m){ if(n.indexOf("Coca-Cola")===0)return true; if(CCEP_OWNED.indexOf(n)>-1)return true; if(m&&m.ownExtra&&m.ownExtra.indexOf(n)>-1)return true; return false; }
 
-const SCALE={ venues:"500K+", countries:"4", ptMapped:"82K+", active:"870K" };
+const SCALE={ venues:"1M+", countries:"4", ptMapped:"82K+", active:"870K" };
 const COMPETITORS=[
-  {name:"DIG-IN", base:"Lisbon", cov:{en:"500K+ venues · 4 countries",pt:"500K+ espaços · 4 países"}, core:{en:"Portugal 82K+ · PT·ES·DE active",pt:"Portugal 82K+ · PT·ES·DE ativos"}, note:{en:"Proprietary data, profitable",pt:"Dados proprietários, rentável"}, us:true},
+  {name:"DIG-IN", base:"Lisbon", cov:{en:"1M+ venues · 4 countries",pt:"1M+ espaços · 4 países"}, core:{en:"Portugal 82K+ · PT·ES·DE active",pt:"Portugal 82K+ · PT·ES·DE ativos"}, note:{en:"Proprietary data, profitable",pt:"Dados proprietários, rentável"}, us:true},
   {name:"Delectatech", base:"Barcelona", cov:{en:"3M venues · 5 countries",pt:"3M espaços · 5 países"}, core:{en:"Spain (250K)",pt:"Espanha (250K)"}, note:{en:"Closest direct competitor",pt:"Concorrente direto mais próximo"}, us:false},
   {name:"Datassential", base:"Chicago", cov:{en:"9M+ operators · 60 countries",pt:"9M+ operadores · 60 países"}, core:{en:"USA (2.1M)",pt:"EUA (2,1M)"}, note:{en:"Global leader, US-anchored",pt:"Líder global, ancorado nos EUA"}, us:false},
   {name:"CGA by NIQ", base:"UK", cov:{en:"On-trade UK / US / EU",pt:"On-trade RU / EUA / UE"}, core:{en:"United Kingdom",pt:"Reino Unido"}, note:{en:"Alcohol-focused",pt:"Focado em álcool"}, us:false}
@@ -684,7 +684,7 @@ const $=id=>document.getElementById(id);
 const DICT={
  en:{
   tab_overview:"Overview", tab_menu:"Share of menu", tab_adjacency:"Adjacencies", tab_execution:"Physical execution", tab_price:"Price & positioning", tab_datapoints:"Data points", tab_coverage:"Coverage & markets", tab_pilot:"Request a pilot",
-  appctx:"Coca-Cola · CCEP<br><b>On-trade intelligence</b>", footMeta:"DIG-IN on-trade intelligence<br>Illustrative figures · real venue counts from the DIG-IN HoReCa model",
+  appctx:"Coca-Cola · CCEP<br><b>On-trade intelligence</b>", footMeta:"DIG-IN on-trade intelligence",
   st_live:"Live", st_indb:"In our data", st_pilot:"Pilot-scanned", st_road:"Roadmap",
   grp_live:"Live", grp_indb:"In our data · weeks to activate", grp_pilot:"Pilot-scanned", grp_road:"Roadmap · Europe",
   sub_indb:"In our data", sub_pilot:"Soho read", sub_road:"Roadmap", mapped_lbl:"mapped",
@@ -704,7 +704,7 @@ const DICT={
   exec_lead:"Menu presence is one thing. The fridge, the glass and the storefront are another — and they are usually behind.", exec_place_title:"Where the brands show up", exec_gap_title:"On the menu vs in the room", leg_leader:"Coca-Cola", leg_chal:"Top challenger", eg_menu:"On the menu",
   price_lead:"Where each brand sits on price, and how premium the mix is by zone.", price_split_title:"Price tiers on the menu", price_clu_title:"Price vs premium mix, by zone", pl_premium:"Premium", pl_main:"Mainstream", pl_value:"Value", clu_x:"Price index →", clu_y:"Premium mix →",
   dp_kicker:"What we deliver", dp_h:"253 data points, <em>every venue</em>.", dp_lead:"Per venue, refreshed on a regular cycle. Grouped by the four lenses you have just seen, plus the base that keeps every record clean and unique.", dp_total:"data points / venue", dp_cats:"categories",
-  cov_kicker:"Coverage & markets", cov_h:"Real coverage — and <em>two markets</em> already in our data.", cov_lead:"Portugal is live. Spain and Germany are already in the DIG-IN database — part of 500K+ venues across four countries. That makes them a switch-on, not a build.",
+  cov_kicker:"Coverage & markets", cov_h:"Real coverage — and <em>two markets</em> already in our data.", cov_lead:"Portugal is live. Spain and Germany are already in the DIG-IN database — part of 1M+ venues across four countries. That makes them a switch-on, not a build.",
   sc_venues:"venues mapped", sc_countries:"countries active", sc_pt:"in Portugal", sc_active:"PT + ES + DE universe",
   goal_label:"markets live by end of 2026", map_title:"The markets", map_note:"Real venue universe per market. Click any market to load its read.",
   comp_title:"Where DIG-IN fits", rec_title:"Recommended next", rec_explore:"Explore this market →", rec_universe:"Venue universe", rec_conf:"Confidence",
@@ -724,7 +724,7 @@ const DICT={
  },
  pt:{
   tab_overview:"Visão geral", tab_menu:"Presença na carta", tab_adjacency:"Adjacências", tab_execution:"Execução física", tab_price:"Preço & posição", tab_datapoints:"Data points", tab_coverage:"Cobertura & mercados", tab_pilot:"Pedir um piloto",
-  appctx:"Coca-Cola · CCEP<br><b>Inteligência on-trade</b>", footMeta:"Inteligência on-trade DIG-IN<br>Valores ilustrativos · contagens reais do modelo HoReCa da DIG-IN",
+  appctx:"Coca-Cola · CCEP<br><b>Inteligência on-trade</b>", footMeta:"Inteligência on-trade DIG-IN",
   st_live:"Ativo", st_indb:"Nos nossos dados", st_pilot:"Piloto lido", st_road:"Roadmap",
   grp_live:"Ativo", grp_indb:"Nos nossos dados · semanas para ativar", grp_pilot:"Piloto lido", grp_road:"Roadmap · Europa",
   sub_indb:"Nos nossos dados", sub_pilot:"Lido no Soho", sub_road:"Roadmap", mapped_lbl:"mapeados",
@@ -744,7 +744,7 @@ const DICT={
   exec_lead:"A carta é uma coisa. O frigorífico, o copo e a fachada são outra — e costumam estar atrás.", exec_place_title:"Onde as marcas aparecem", exec_gap_title:"Na carta vs no espaço", leg_leader:"Coca-Cola", leg_chal:"Maior desafiante", eg_menu:"Na carta",
   price_lead:"Onde cada marca está no preço, e quão premium é o mix por zona.", price_split_title:"Escalões de preço na carta", price_clu_title:"Preço vs mix premium, por zona", pl_premium:"Premium", pl_main:"Médio", pl_value:"Valor", clu_x:"Índice de preço →", clu_y:"Mix premium →",
   dp_kicker:"O que entregamos", dp_h:"253 data points, <em>cada espaço</em>.", dp_lead:"Por espaço, atualizados num ciclo regular. Agrupados pelas quatro lentes que acabaste de ver, mais a base que mantém cada registo limpo e único.", dp_total:"data points / espaço", dp_cats:"categorias",
-  cov_kicker:"Cobertura & mercados", cov_h:"Cobertura real — e <em>dois mercados</em> já nos nossos dados.", cov_lead:"Portugal está ativo. Espanha e Alemanha já estão na base da DIG-IN — parte de 500K+ espaços em quatro países. Isso torna-os um ligar, não um construir.",
+  cov_kicker:"Cobertura & mercados", cov_h:"Cobertura real — e <em>dois mercados</em> já nos nossos dados.", cov_lead:"Portugal está ativo. Espanha e Alemanha já estão na base da DIG-IN — parte de 1M+ espaços em quatro países. Isso torna-os um ligar, não um construir.",
   sc_venues:"espaços mapeados", sc_countries:"países ativos", sc_pt:"em Portugal", sc_active:"universo PT + ES + DE",
   goal_label:"mercados ativos até ao fim de 2026", map_title:"Os mercados", map_note:"Universo real de espaços por mercado. Clica num mercado para carregar a leitura.",
   comp_title:"Onde a DIG-IN encaixa", rec_title:"Próximos recomendados", rec_explore:"Explorar este mercado →", rec_universe:"Universo de espaços", rec_conf:"Confiança",
