@@ -676,6 +676,7 @@ let LANG="en", MK="PT", TAB="overview", CAT="Soft drinks";
 let wizStep=1, wizCountry="PT", wizCity=MARKETS.PT.cities[0], wizPin=null;
 let wizMap=null, wizMarker=null, wizCircle=null;
 let wizPointLayers=[], wizCount=null, wizCountLoading=false, wizCountReal=false;
+let wizSentRef=null, wizSubmitError=false;
 let wizSel=new Set(DATAPOINTS.cats.map((c,i)=>c.k==="menu"?i:-1).filter(i=>i>=0));
 const $=id=>document.getElementById(id);
 
@@ -1003,8 +1004,12 @@ function wizVenuesEstimate(){ return Math.round(density(MARKETS[wizCountry])*0.1
 
 function renderPilot(){
   const wrap=$("pilotWrap");
+  if(wizStep==="submitting"){
+    wrap.innerHTML=hero(T.pl_kicker,T.pl_h,T.pl_lead,false)+`<div class="wizsent"><div class="tick" style="background:rgba(232,255,79,.14);border-color:rgba(232,255,79,.4);color:var(--accent)">…</div><h3>${LANG==="en"?"Sending your request…":"A enviar o teu pedido…"}</h3></div>`;
+    return;
+  }
   if(wizStep==="sent"){
-    const ref="DIG-"+wizCountry+"-"+(1000+Math.floor(_r()*8999));
+    const ref=wizSentRef||("DIG-"+wizCountry+"-"+(1000+Math.floor(_r()*8999)));
     wrap.innerHTML=hero(T.pl_kicker,T.pl_h,T.pl_lead,false)+`<div class="wizsent"><div class="tick">✓</div><h3>${T.sent_h}</h3><p>${T.sent_p}</p><div class="ref">${T.sent_ref}: ${ref}</div><div style="margin-top:24px"><button class="btn ghost" onclick="wizReset()">${T.sent_again}</button></div></div>`;
     return;
   }
@@ -1027,6 +1032,7 @@ function renderPilot(){
     let total=0,cats=0; wizSel.forEach(i=>{total+=DATAPOINTS.cats[i].n;cats++;});
     const m=MARKETS[wizCountry];
     h+=`<div class="sumcard"><div class="sumrow"><span class="sk">${T.sum_country}</span><span class="sv">${m.flag} ${m.name}</span></div><div class="sumrow"><span class="sk">${T.lbl_city}</span><span class="sv">${wizCity}</span></div><div class="sumrow"><span class="sk">${T.sum_area}</span><span class="sv">250 m · <b>~${fmt(wizCount!=null?wizCount:wizVenuesEstimate())}</b> ${T.venues_word}</span></div><div class="sumrow"><span class="sk">${T.sum_cats}</span><span class="sv">${cats} / 21</span></div><div class="sumrow"><span class="sk">${T.sum_points}</span><span class="sv"><b>${total}</b></span></div></div>`;
+    if(wizSubmitError) h+=`<div class="note" style="border-left-color:var(--coke)">${LANG==="en"?"Couldn't send the request — please try again.":"Não foi possível enviar o pedido — tenta novamente."}</div>`;
     h+=`<div class="btnrow"><button class="btn ghost" onclick="wizGo(2)">${T.wiz_back}</button><button class="btn primary" onclick="wizSubmit()">${T.wiz_submit}</button></div>`;
   }
   h+=`</div>`;
@@ -1093,8 +1099,26 @@ function wizSetCity(v){ wizCity=v; wizPin=null; wizCount=null; renderPilot(); }
 function wizTog(i){ if(wizSel.has(i))wizSel.delete(i); else wizSel.add(i); renderPilot(); }
 function wizAll(){ DATAPOINTS.cats.forEach((c,i)=>wizSel.add(i)); renderPilot(); }
 function wizClear(){ wizSel.clear(); renderPilot(); }
-function wizSubmit(){ wizStep="sent"; renderPilot(); }
-function wizReset(){ wizStep=1; wizPin=null; wizCount=null; renderPilot(); }
+async function wizSubmit(){
+  wizSubmitError=false; wizStep="submitting"; renderPilot();
+  const m=MARKETS[wizCountry];
+  let total=0,cats=0; wizSel.forEach(i=>{total+=DATAPOINTS.cats[i].n;cats++;});
+  const selectedFields=[...wizSel].map(i=>DATAPOINTS.cats[i].name.en);
+  const payload={
+    project:"coca-cola-on-trade", country:wizCountry, countryName:m.name, city:wizCity,
+    lat:wizPin?wizPin.lat:null, lng:wizPin?wizPin.lng:null, radius:250,
+    venueCount:wizCount!=null?wizCount:wizVenuesEstimate(), venueCountSource:wizCountReal?"real":"estimate",
+    dataPointsTotal:total, dataPointsCategories:cats, selectedFields, lang:LANG
+  };
+  try{
+    const res=await fetch("/api/submit-pilot",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(data && data.ok){ wizSentRef=data.reference; wizStep="sent"; }
+    else { wizSubmitError=true; wizStep=3; }
+  }catch(e){ wizSubmitError=true; wizStep=3; }
+  renderPilot();
+}
+function wizReset(){ wizStep=1; wizPin=null; wizCount=null; wizSentRef=null; wizSubmitError=false; renderPilot(); }
 
 /* ================= WIRING + INIT ================= */
 document.querySelectorAll("#lang button").forEach(b=>b.onclick=()=>applyLang(b.dataset.l));
