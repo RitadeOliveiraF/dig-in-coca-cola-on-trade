@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root{
   --bg:#0c0e10; --panel:#14171a; --panel-2:#191d21; --panel-3:#20262b;
@@ -346,7 +348,15 @@ main{max-width:1300px;margin:0 auto}
 .fsel{width:100%;font-family:'Inter',sans-serif;font-size:13.5px;padding:10px 13px;background:var(--panel-2);color:var(--ink);border:1px solid var(--line-2);border-radius:7px;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' stroke='%239aa3ab' stroke-width='1.4' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 13px center;padding-right:32px}
 .wizcanvas{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative}
 .wizcanvas svg{display:block;width:100%;height:auto;cursor:crosshair}
-.canvhint{position:absolute;top:12px;left:14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);background:rgba(12,14,16,.7);padding:5px 10px;border-radius:5px;pointer-events:none}
+.canvhint{position:absolute;top:12px;left:14px;z-index:500;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);background:rgba(12,14,16,.7);padding:5px 10px;border-radius:5px;pointer-events:none}
+#wizLeafletMap{width:100%;height:360px;background:var(--panel)}
+.leaflet-container{background:var(--panel)!important;font-family:'Inter',sans-serif}
+.leaflet-control-attribution{background:rgba(12,14,16,.75)!important;color:var(--ink-faint)!important;font-size:9px!important}
+.leaflet-control-attribution a{color:var(--ink-dim)!important}
+.databadge{position:absolute;top:12px;right:12px;z-index:500;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:5px 10px;border-radius:5px;pointer-events:none}
+.databadge.real{background:rgba(70,224,143,.16);color:var(--live);border:1px solid rgba(70,224,143,.35)}
+.databadge.est{background:rgba(120,132,144,.16);color:var(--ink-dim);border:1px solid var(--line-2)}
+.rdv.loading{color:var(--ink-faint);font-size:13px}
 .wizside{display:flex;flex-direction:column;gap:16px}
 .wizreadout{background:linear-gradient(135deg,var(--panel-2),var(--panel));border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:20px}
 .rd{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--line)}
@@ -634,6 +644,26 @@ const MARKETS={
 };
 
 const MARKET_ORDER=["PT","ES","DE","GB","FR","NL","BE","LU","SE","NO","IS","AD","MC"];
+
+/* Real coordinates per city (map centering) and which countries have a live
+   per-country table in the Restaurant Discovery DB (real counts via /api/venues).
+   LU · IS · AD · MC have no dedicated table yet — those fall back to the model estimate. */
+const REAL_DATA_COUNTRIES=new Set(["PT","ES","DE","GB","FR","NL","BE","SE","NO"]);
+const CITY_COORDS={
+  "Lisboa · Cais do Sodré":[38.7057,-9.1447], "Porto · Baixa":[41.1496,-8.6109], "Cascais":[38.6979,-9.4215], "Coimbra":[40.2033,-8.4103], "Braga":[41.5454,-8.4265], "Algarve · Lagos":[37.1021,-8.6746],
+  "Madrid · Malasaña":[40.4265,-3.7038], "Barcelona · El Born":[41.3851,2.1808], "Valencia":[39.4699,-0.3763], "Sevilla":[37.3891,-5.9845], "Bilbao":[43.2630,-2.9350],
+  "Berlin · Kreuzberg":[52.4996,13.4033], "Berlin · Prenzlauer Berg":[52.5391,13.4245], "Hamburg":[53.5511,9.9937], "München":[48.1351,11.5820], "Köln":[50.9375,6.9603],
+  "London · Soho":[51.5136,-0.1365], "Manchester":[53.4808,-2.2426], "Edinburgh":[55.9533,-3.1883], "Birmingham":[52.4862,-1.8904], "Bristol":[51.4545,-2.5879],
+  "Paris · Le Marais":[48.8589,2.3622], "Lyon":[45.7640,4.8357], "Marseille":[43.2965,5.3698], "Bordeaux":[44.8378,-0.5792], "Lille":[50.6292,3.0573],
+  "Amsterdam":[52.3676,4.9041], "Rotterdam":[51.9244,4.4777], "Utrecht":[52.0907,5.1214], "Den Haag":[52.0705,4.3007],
+  "Brussels":[50.8503,4.3517], "Antwerp":[51.2194,4.4025], "Ghent":[51.0543,3.7174], "Bruges":[51.2093,3.2247],
+  "Luxembourg City":[49.6116,6.1319], "Esch-sur-Alzette":[49.4958,5.9806],
+  "Stockholm":[59.3293,18.0686], "Göteborg":[57.7089,11.9746], "Malmö":[55.6050,13.0038],
+  "Oslo":[59.9139,10.7522], "Bergen":[60.3913,5.3221], "Trondheim":[63.4305,10.3951],
+  "Reykjavík":[64.1466,-21.9426], "Akureyri":[65.6835,-18.1002],
+  "Andorra la Vella":[42.5063,1.5218], "Escaldes":[42.5081,1.5397],
+  "Monte-Carlo":[43.7396,7.4275], "La Condamine":[43.7325,7.4204]
+};
 const STATUS_META={ live:"live", active:"active", road:"road" };
 const CATS_ALL=["Soft drinks","Energy","Mixers"];
 </script>
@@ -641,6 +671,8 @@ const CATS_ALL=["Soft drinks","Energy","Mixers"];
 /* ================= STATE ================= */
 let LANG="en", MK="PT", TAB="overview", CAT="Soft drinks";
 let wizStep=1, wizCountry="PT", wizCity=MARKETS.PT.cities[0], wizPin=null;
+let wizMap=null, wizMarker=null, wizCircle=null;
+let wizCount=null, wizCountLoading=false, wizCountReal=false;
 let wizSel=new Set(DATAPOINTS.cats.map((c,i)=>c.k==="menu"?i:-1).filter(i=>i>=0));
 const $=id=>document.getElementById(id);
 
@@ -964,17 +996,55 @@ function wizSteps(){
   const cur = wizStep==="sent"?4:wizStep;
   return `<div class="wizsteps">${s.map(([n,l,sub])=>`<div class="wizstep ${n===cur?"on":n<cur?"done":""}"><div class="wn">${n<cur?"✓":n}</div><div class="wl">${l}<small>${sub}</small></div></div>`).join("")}</div>`;
 }
-function wizVenues(){ return Math.round(density(MARKETS[wizCountry])*0.16); }
+function wizIsReal(){ return REAL_DATA_COUNTRIES.has(wizCountry); }
+function wizVenuesEstimate(){ return Math.round(density(MARKETS[wizCountry])*0.16); }
 function wizCanvas(){
-  let pinEls="", pinR=78;
-  let dotFill=DOTS.map(()=>"#2a3038");
-  if(wizPin){ const hp=hexPts(wizPin.x,wizPin.y,pinR); DOTS.forEach((d,i)=>{ if(inPoly(d.x,d.y,hp)) dotFill[i]="var(--coke)"; });
-    const pts=hp.map(p=>p[0].toFixed(0)+","+p[1].toFixed(0)).join(" ");
-    pinEls=`<polygon points="${pts}" fill="rgba(232,255,79,.09)" stroke="var(--accent)" stroke-width="1.5"/><circle cx="${wizPin.x}" cy="${wizPin.y}" r="5" fill="var(--accent)"/><circle cx="${wizPin.x}" cy="${wizPin.y}" r="10" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".5"/>`;
-  }
-  const grid=[...Array(9)].map((_,i)=>`<line x1="${i*80}" y1="0" x2="${i*80}" y2="360" stroke="#1c2126" stroke-width="1"/>`).join("")+[...Array(5)].map((_,i)=>`<line x1="0" y1="${i*80}" x2="640" y2="${i*80}" stroke="#1c2126" stroke-width="1"/>`).join("");
-  const dots=DOTS.map((d,i)=>`<circle cx="${d.x.toFixed(0)}" cy="${d.y.toFixed(0)}" r="3" fill="${dotFill[i]}"/>`).join("");
-  return `<div class="wizcanvas"><div class="canvhint">${T.canv_hint}</div><svg viewBox="0 0 640 360" onclick="wizDrop(event)">${grid}${dots}${pinEls}</svg></div>`;
+  const badge = wizIsReal()
+    ? `<span class="databadge real">${LANG==="en"?"Real data · Restaurant Discovery DB":"Dados reais · BD Restaurant Discovery"}</span>`
+    : `<span class="databadge est">${LANG==="en"?"Estimate · no DB coverage yet":"Estimativa · sem cobertura na BD"}</span>`;
+  return `<div class="wizcanvas">${badge}<div class="canvhint">${T.canv_hint}</div><div id="wizLeafletMap"></div></div>`;
+}
+function wizInitMap(){
+  const el=document.getElementById("wizLeafletMap");
+  if(!el || typeof L==="undefined") return;
+  if(wizMap){ wizMap.remove(); wizMap=null; wizMarker=null; wizCircle=null; }
+  const center = CITY_COORDS[wizCity] || CITY_COORDS[MARKETS[wizCountry].cities[0]] || [45,10];
+  wizMap=L.map(el,{zoomControl:true,attributionControl:true}).setView(center, 14);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{
+    maxZoom:19, attribution:'&copy; OpenStreetMap &copy; CARTO'
+  }).addTo(wizMap);
+  if(wizPin && wizPin.country===wizCountry && wizPin.city===wizCity){ dropAt(wizPin.lat,wizPin.lng,false); }
+  wizMap.on("click", e=>dropAt(e.latlng.lat, e.latlng.lng, true));
+}
+function dropAt(lat,lng,fetchNew){
+  wizPin={lat,lng,country:wizCountry,city:wizCity};
+  if(wizMarker) wizMap.removeLayer(wizMarker);
+  if(wizCircle) wizMap.removeLayer(wizCircle);
+  wizMarker=L.circleMarker([lat,lng],{radius:6,color:"#e8ff4f",weight:2,fillColor:"#e8ff4f",fillOpacity:1}).addTo(wizMap);
+  wizCircle=L.circle([lat,lng],{radius:250,color:"#f5001d",weight:1.5,fillColor:"#f5001d",fillOpacity:.08}).addTo(wizMap);
+  document.querySelectorAll(".btnrow .btn.primary").forEach(b=>{ if(b.dataset.wizNext1) b.disabled=false; });
+  if(fetchNew) fetchVenueCount(lat,lng); else updateCountUI();
+}
+async function fetchVenueCount(lat,lng){
+  wizCountLoading=true; wizCount=null; updateCountUI();
+  if(!wizIsReal()){ wizCount=wizVenuesEstimate(); wizCountReal=false; wizCountLoading=false; updateCountUI(); return; }
+  try{
+    const cc=wizCountry.toLowerCase();
+    const res=await fetch(`/api/venues?country=${cc}&lat=${lat}&lng=${lng}&radius=250`);
+    const data=await res.json();
+    if(data && data.ok){ wizCount=data.venues; wizCountReal=true; }
+    else { wizCount=wizVenuesEstimate(); wizCountReal=false; }
+  }catch(e){ wizCount=wizVenuesEstimate(); wizCountReal=false; }
+  wizCountLoading=false; updateCountUI();
+}
+function updateCountUI(){
+  const v=document.getElementById("wizVenueReadout");
+  if(!v) return;
+  if(wizCountLoading){ v.innerHTML=`<span class="rdv loading">${LANG==="en"?"Counting…":"A contar…"}</span>`; return; }
+  if(wizCount==null){ v.innerHTML=`<span class="rdv">—</span>`; return; }
+  const tagTxt = wizCountReal ? (LANG==="en"?"real":"real") : (LANG==="en"?"est.":"est.");
+  const tagCol = wizCountReal ? "var(--live)" : "var(--ink-faint)";
+  v.innerHTML=`<span class="rdv coke">~${fmt(wizCount)} <small style="color:${tagCol}">${tagTxt}</small></span>`;
 }
 function renderPilot(){
   const wrap=$("pilotWrap");
@@ -986,8 +1056,9 @@ function renderPilot(){
   let h=hero(T.pl_kicker,T.pl_h,T.pl_lead,false)+wizSteps()+`<div class="wizpane">`;
   if(wizStep===1){
     const m=MARKETS[wizCountry];
-    h+=`<div class="wizgrid"><div><div class="selrow"><div class="selfield"><label>${T.lbl_country}</label><select class="fsel" onchange="wizSetCountry(this.value)">${MARKET_ORDER.map(c=>`<option value="${c}" ${c===wizCountry?"selected":""}>${MARKETS[c].flag}  ${MARKETS[c].name}</option>`).join("")}</select></div><div class="selfield"><label>${T.lbl_city}</label><select class="fsel" onchange="wizSetCity(this.value)">${m.cities.map(c=>`<option ${c===wizCity?"selected":""}>${c}</option>`).join("")}</select></div></div>${wizCanvas()}</div><div class="wizside"><div class="wizreadout"><div class="rd"><span class="rdk">${T.rd_area}</span><span class="rdv acc">250 m</span></div><div class="rd"><span class="rdk">${T.rd_venues}</span><span class="rdv coke">${wizPin?"~"+wizVenues():"—"}</span></div></div><div style="font-size:12px;color:var(--ink-faint);line-height:1.55">${T.rd_help}</div></div></div>`;
-    h+=`<div class="btnrow"><span></span><button class="btn primary" ${wizPin?"":"disabled"} onclick="wizGo(2)">${wizPin?T.wiz_next1:T.rd_pending}</button></div>`;
+    const samePin = wizPin && wizPin.country===wizCountry && wizPin.city===wizCity;
+    h+=`<div class="wizgrid"><div><div class="selrow"><div class="selfield"><label>${T.lbl_country}</label><select class="fsel" onchange="wizSetCountry(this.value)">${MARKET_ORDER.map(c=>`<option value="${c}" ${c===wizCountry?"selected":""}>${MARKETS[c].flag}  ${MARKETS[c].name}</option>`).join("")}</select></div><div class="selfield"><label>${T.lbl_city}</label><select class="fsel" onchange="wizSetCity(this.value)">${m.cities.map(c=>`<option ${c===wizCity?"selected":""}>${c}</option>`).join("")}</select></div></div>${wizCanvas()}</div><div class="wizside"><div class="wizreadout"><div class="rd"><span class="rdk">${T.rd_area}</span><span class="rdv acc">250 m</span></div><div class="rd"><span class="rdk">${T.rd_venues}</span><span id="wizVenueReadout">${samePin?"":"<span class='rdv'>—</span>"}</span></div></div><div style="font-size:12px;color:var(--ink-faint);line-height:1.55">${T.rd_help}</div></div></div>`;
+    h+=`<div class="btnrow"><span></span><button class="btn primary" data-wiz-next1="1" ${samePin?"":"disabled"} onclick="wizGo(2)">${samePin?T.wiz_next1:T.rd_pending}</button></div>`;
   } else if(wizStep===2){
     const byLayer={};DATAPOINTS.cats.forEach((c,i)=>{(byLayer[c.k]=byLayer[c.k]||[]).push(i);});
     const layerLbl={menu:T.layer_menu,exec:T.layer_exec,adj:T.layer_adj,price:T.layer_price,found:T.layer_found};
@@ -1001,21 +1072,23 @@ function renderPilot(){
   } else if(wizStep===3){
     let total=0,cats=0; wizSel.forEach(i=>{total+=DATAPOINTS.cats[i].n;cats++;});
     const m=MARKETS[wizCountry];
-    h+=`<div class="sumcard"><div class="sumrow"><span class="sk">${T.sum_country}</span><span class="sv">${m.flag} ${m.name}</span></div><div class="sumrow"><span class="sk">${T.lbl_city}</span><span class="sv">${wizCity}</span></div><div class="sumrow"><span class="sk">${T.sum_area}</span><span class="sv">250 m · <b>~${wizVenues()}</b> ${T.venues_word}</span></div><div class="sumrow"><span class="sk">${T.sum_cats}</span><span class="sv">${cats} / 21</span></div><div class="sumrow"><span class="sk">${T.sum_points}</span><span class="sv"><b>${total}</b></span></div></div>`;
+    const cVal = wizCount!=null ? wizCount : wizVenuesEstimate();
+    const cTag = wizCountReal ? (LANG==="en"?"real count":"contagem real") : (LANG==="en"?"estimate":"estimativa");
+    h+=`<div class="sumcard"><div class="sumrow"><span class="sk">${T.sum_country}</span><span class="sv">${m.flag} ${m.name}</span></div><div class="sumrow"><span class="sk">${T.lbl_city}</span><span class="sv">${wizCity}</span></div><div class="sumrow"><span class="sk">${T.sum_area}</span><span class="sv">250 m · <b>~${fmt(cVal)}</b> ${T.venues_word} <span style="color:var(--ink-faint);font-size:11px">(${cTag})</span></span></div><div class="sumrow"><span class="sk">${T.sum_cats}</span><span class="sv">${cats} / 21</span></div><div class="sumrow"><span class="sk">${T.sum_points}</span><span class="sv"><b>${total}</b></span></div></div>`;
     h+=`<div class="btnrow"><button class="btn ghost" onclick="wizGo(2)">${T.wiz_back}</button><button class="btn primary" onclick="wizSubmit()">${T.wiz_submit}</button></div>`;
   }
   h+=`</div>`;
   wrap.innerHTML=h;
+  if(wizStep===1){ wizInitMap(); if(wizPin && wizPin.country===wizCountry && wizPin.city===wizCity) fetchVenueCount(wizPin.lat,wizPin.lng); }
 }
 function wizGo(s){ wizStep=s; renderPilot(); }
-function wizSetCountry(c){ wizCountry=c; wizCity=MARKETS[c].cities[0]; wizPin=null; renderPilot(); }
-function wizSetCity(v){ wizCity=v; renderPilot(); }
-function wizDrop(e){ const svg=e.currentTarget, r=svg.getBoundingClientRect(); wizPin={x:(e.clientX-r.left)/r.width*640, y:(e.clientY-r.top)/r.height*360}; renderPilot(); }
+function wizSetCountry(c){ wizCountry=c; wizCity=MARKETS[c].cities[0]; wizCount=null; renderPilot(); }
+function wizSetCity(v){ wizCity=v; wizCount=null; renderPilot(); }
 function wizTog(i){ if(wizSel.has(i))wizSel.delete(i); else wizSel.add(i); renderPilot(); }
 function wizAll(){ DATAPOINTS.cats.forEach((c,i)=>wizSel.add(i)); renderPilot(); }
 function wizClear(){ wizSel.clear(); renderPilot(); }
 function wizSubmit(){ wizStep="sent"; renderPilot(); }
-function wizReset(){ wizStep=1; wizPin=null; renderPilot(); }
+function wizReset(){ wizStep=1; wizPin=null; wizCount=null; renderPilot(); }
 
 /* ================= WIRING + INIT ================= */
 document.querySelectorAll("#lang button").forEach(b=>b.onclick=()=>applyLang(b.dataset.l));
